@@ -3,8 +3,6 @@ const processLinksSequentially = require("./processLinks");
 const loginProcess = require("./auth");
 const { BASE_URL, broswerView } = require("./config");
 
-// const delay = { delay: 200 };
-// const clickOption = { button: "middle", delay: 500 };
 // Grab the cookies from the page used to log in
 let cookies = "";
 (async () => {
@@ -30,6 +28,7 @@ let cookies = "";
     });
     const modalBox = await page.$('a[data-target="#period_scores_modal_1"]');
     await modalBox.click();
+
     // GET ALL LINKS IN POPUP
     await page.waitForSelector('table[class="table"] a', {
         visible: true,
@@ -37,11 +36,11 @@ let cookies = "";
     const links = await page.$$eval('table[class="table"] a', (links) =>
         links.map((link) => link.href)
     );
-    // console.log(links);
 
     try {
         await processLinksSequentially(links, browser, cookies);
     } catch (error) {
         console.log(error);
     }
+    await browser.close();
 })();
