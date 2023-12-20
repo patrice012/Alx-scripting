@@ -1,42 +1,21 @@
 const puppeteer = require("puppeteer");
-const { BASE_URL, EMAIL, PASSWORD } = require("./config");
+const processLinksSequentially = require("./processLinks");
+const loginProcess = require("./auth");
+const { BASE_URL, broswerView } = require("./config");
 
-const delay = { delay: 200 };
-const clickOption = { button: "middle", delay: 500 };
+// const delay = { delay: 200 };
+// const clickOption = { button: "middle", delay: 500 };
 // Grab the cookies from the page used to log in
 let cookies = "";
-// let cookies = await page.cookies();
 (async () => {
-    const browser = await puppeteer.launch({
-        headless: false,
-        defaultViewport: null,
-    });
+    const browser = await puppeteer.launch(broswerView);
     const url = new URL(BASE_URL);
     const page = await browser.newPage();
     await page.goto(url, { timeout: 0 });
 
     // AUTHENTICATION PROCESS
     try {
-        /* check if the login page is show up */
-        const loginBox = await page.$('div[class="logged_out_form"]');
-        if (loginBox) {
-            /* LOGIN PROCESS */
-            /* fill email form */
-            const emailInput = await page.$('input[id="user_email"]');
-            await emailInput.type(EMAIL, delay);
-            /* fill password */
-            const pwdInput = await page.$('input[id="user_password"]');
-            await pwdInput.type(PASSWORD, delay);
-            /* check the remeneber me box */
-            const rmb_me = await page.$('input[id="user_remember_me"]');
-            await rmb_me.click();
-            /* login btn click*/
-            const loginBtn = await page.$('input[type="submit"]');
-            await Promise.all([
-                loginBtn.click(),
-                page.waitForNavigation({ waitFor: "networkidle0" }),
-            ]);
-        }
+        await loginProcess(page);
     } catch (error) {
         /* HANDLE ERROR HERE */
         console.log(error);
@@ -58,19 +37,10 @@ let cookies = "";
     const links = await page.$$eval('table[class="table"] a', (links) =>
         links.map((link) => link.href)
     );
-    console.log(links);
+    // console.log(links);
 
     try {
-        links.forEach((link) => {
-            (async () => {
-                /* PROJECT LINKS*/
-                // Create a fresh non-persistent browser context
-                const projectBW = await browser.createIncognitoBrowserContext();
-                const projectPage = await projectBW.newPage();
-                await projectPage.setCookie(...cookies);
-                await projectPage.goto(link, { timeout: 0 });
-            })();
-        });
+        await processLinksSequentially(links, browser, cookies);
     } catch (error) {
         console.log(error);
     }
