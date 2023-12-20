@@ -3,7 +3,9 @@ const { BASE_URL, EMAIL, PASSWORD } = require("./config");
 
 const delay = { delay: 500 };
 const clickOption = { button: "middle", delay: 500 };
-
+// Grab the cookies from the page used to log in
+let cookies = "";
+// let cookies = await page.cookies();
 (async () => {
     const browser = await puppeteer.launch({
         headless: false,
@@ -24,11 +26,10 @@ const clickOption = { button: "middle", delay: 500 };
             await emailInput.type(EMAIL, delay);
             /* fill password */
             const pwdInput = await page.$('input[id="user_password"]');
-            pwdInput.type([PASSWORD, delay]);
+            await pwdInput.type([PASSWORD, delay]);
             /* check the remeneber me box */
             const rmb_me = await page.$('input[id="user_remember_me"]');
-            rmb_me.click(clickOption);
-
+            await rmb_me.click(clickOption);
             /* login btn click*/
             const loginBtn = await page.$('input[value="Log in"]');
             await loginBtn.click(clickOption);
@@ -37,12 +38,20 @@ const clickOption = { button: "middle", delay: 500 };
         }
     } catch (error) {
         console.log(error);
+    } finally {
+        // Grab the cookies from the page used to log in
+        cookies = await page.cookies();
     }
+    
     // OPEN MODAL OVERVIEW
+    // await page.waitForSelector('a[data-target="#period_scores_modal_1"]');
     const modalBox = await page.$('a[data-target="#period_scores_modal_1"]');
     await modalBox.click(clickOption);
     // GET ALL LINKS
     const tableLinks = await page.$('table[class="table"]');
     const links = await tableLinks.$$("a");
     console.log(links);
+    // Array.array.forEach(element => {
+
+    // });
 })();
