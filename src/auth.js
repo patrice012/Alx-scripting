@@ -1,4 +1,4 @@
-const { EMAIL, PASSWORD } = require("./config");
+const { EMAIL, PASSWORD } = require("../config");
 
 const delay = { delay: 200 };
 // const clickOption = { button: "middle", delay: 500 };

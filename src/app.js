@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer");
 const processLinksSequentially = require("./processLinks");
 const loginProcess = require("./auth");
-const { BASE_URL, broswerView } = require("./config");
+const { BASE_URL, broswerView } = require("../config");
 
 // Grab the cookies from the page used to log in
 let cookies = "";
