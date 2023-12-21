@@ -14,8 +14,6 @@ async function processLinksSequentially(links, browser, cookies) {
             await projectPage.goto(link, { timeout: 0 });
 
             // format PDF name based on project name
-            // await projectPage.waitForSelector('h1[class="gap"]');
-
             const pdfName = await getPdfName(projectPage, 'h1[class="gap"]');
 
             await removeUnwantedTags(projectPage);

@@ -16,7 +16,6 @@ let cookies = "";
     try {
         await loginProcess(page);
     } catch (error) {
-        /* HANDLE ERROR HERE */
         console.log(error);
     } finally {
         // Grab the cookies from the page used to log in

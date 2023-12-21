@@ -1,12 +1,11 @@
 const { EMAIL, PASSWORD } = require("../config");
 
 const delay = { delay: 200 };
-// const clickOption = { button: "middle", delay: 500 };
 
+/* LOGIN PROCESS */
 async function loginProcess(page) {
     const loginBox = await page.$('div[class="logged_out_form"]');
     if (loginBox) {
-        /* LOGIN PROCESS */
         /* fill email form */
         const emailInput = await page.$('input[id="user_email"]');
         await emailInput.type(EMAIL, delay);

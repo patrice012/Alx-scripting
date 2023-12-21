@@ -16,13 +16,9 @@ async function openConceptLinks(projectPage, browser, dirName) {
 
     const projectLinks = await getAllResolvedURLs(hrefs);
     /* open each link */
-    console.log(projectLinks, "projectLinks");
-
     for (const link of projectLinks) {
         await (async () => {
             /* PROJECT LINKS */
-            // const projectLinkBw = await browser.createIncognitoBrowserContext();
-            // const conceptPage = await projectLinkBw.newPage();
 
             const conceptPage = await browser.newPage();
             await conceptPage.goto(link, { timeout: 0 });
@@ -60,7 +56,8 @@ async function openConceptLinks(projectPage, browser, dirName) {
             }
             let pdfPath = `pdf/${dirName}/${pdfName}`;
             await createPDF(conceptPage, pdfPath);
-            // close browser window
+            
+            // close page window
             await conceptPage.close();
         })();
 
