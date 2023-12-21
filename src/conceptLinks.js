@@ -1,4 +1,7 @@
 const loginProcess = require("./auth");
+const createPDF = require("../utils/createPDF");
+const removeUnwantedTags = require("../utils/removeTags");
+const { getPdfName } = require("../utils/formatPDFName");
 
 async function openConceptLinks(projectPage, browser) {
     /* get all links */
@@ -12,19 +15,16 @@ async function openConceptLinks(projectPage, browser) {
     }
 
     const projectLinks = await getAllResolvedURLs(hrefs);
-
     /* open each link */
     console.log(projectLinks, "projectLinks");
 
     for (const link of projectLinks) {
         await (async () => {
             /* PROJECT LINKS */
-            const projectLinkBw = await browser.createIncognitoBrowserContext();
-            const conceptPage = await projectLinkBw.newPage();
+            // const projectLinkBw = await browser.createIncognitoBrowserContext();
+            // const conceptPage = await projectLinkBw.newPage();
 
-            // /* only set cookies if needed. */
-            // await conceptPage.setCookie(...cookies);
-
+            const conceptPage = await browser.newPage();
             await conceptPage.goto(link, { timeout: 0 });
 
             try {
@@ -37,43 +37,35 @@ async function openConceptLinks(projectPage, browser) {
             }
 
             // format PDF name based on project name
-            // await conceptPage.waitForSelector('h1[class="gap"]');
             let pdfName = "";
             if (link.includes("https://intranet.alxswe.com/concepts")) {
-                await conceptPage.waitForSelector(
-                    'h1[class="d-flex flex-column gap-2"] > span'
-                );
-                pdfName = await conceptPage.$eval(
-                    'h1[class="d-flex flex-column gap-2"] > span',
-                    (ele) => {
-                        const name = ele.innerHTML
-                            .replaceAll(" ", "-")
-                            .replaceAll(".", "")
-                            .replaceAll(",", "");
-                        return name;
-                    }
-                );
+                const target = 'h1[class="d-flex flex-column gap-2"] > span';
+                pdfName = await getPdfName(conceptPage, target);
                 console.log(pdfName, "pdfName from concept page");
                 await removeUnwantedTags(conceptPage);
             } else {
                 /* Use the document title as pdf name */
                 pdfName = await conceptPage.evaluate(() => {
                     const name = document.title
-                        .replaceAll(" ", "-")
-                        .replaceAll(".", "")
-                        .replaceAll(",", "");
-                    return name;
+                        .trim()
+                        .slice(0, 55)
+                        .replace(/[\\'.,\/\s]+/g, "-")
+                        .replace(/-+/g, "-");
+                    if (!name.length >= 1) {
+                        name = "default-name";
+                    }
+                    return name + ".pdf";
                 });
                 console.log(pdfName, "pdfName from document title");
             }
 
             await createPDF(conceptPage, pdfName);
             // close browser window
-            await projectLinkBw.close();
+            await conceptPage.close();
         })();
 
         // Introduce a delay between iterations
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 }
 

@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer");
 const processLinksSequentially = require("./processLinks");
 const loginProcess = require("./auth");
 const { BASE_URL, broswerView } = require("../config");
+const { _format } = require("../utils/formatPDFName");
 
 // Grab the cookies from the page used to log in
 let cookies = "";
@@ -38,6 +39,9 @@ let cookies = "";
     );
 
     try {
+        /* EXPOSE CUSTOM FUNCTION IN THE DOM */
+        await page.exposeFunction("_format", _format);
+        /* process each links */
         await processLinksSequentially(links, browser, cookies);
     } catch (error) {
         console.log(error);
