@@ -1,3 +1,6 @@
+const openConceptLinks = require("./conceptLinks");
+
+
 async function processLinksSequentially(links, browser, cookies) {
     for (const link of links) {
         await (async () => {
@@ -15,6 +18,9 @@ async function processLinksSequentially(links, browser, cookies) {
             await removeUnwantedTags(projectPage);
 
             await createPDF(projectPage, pdfName);
+
+            /* PROCESS EACH LINKS IN THE CONCEPTS SECTION */
+            await openConceptLinks(projectPage, browser);
 
             // close browser window
             await projectBW.close();
