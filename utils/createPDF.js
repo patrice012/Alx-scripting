@@ -1,7 +1,9 @@
 // create PDF based on HTML content
-async function createPDF(projectPage, pdfName) {
+const path = require("path");
+
+async function createPDF(projectPage, dirPath) {
     await projectPage.pdf({
-        path: pdfName,
+        path: path.normalize(dirPath),
         printBackground: true,
         format: "A4",
     });

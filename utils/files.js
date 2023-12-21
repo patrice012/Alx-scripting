@@ -1,14 +1,16 @@
 const fs = require("fs");
-const path = require("path"); 
 
-function createDir(folderName) {
+async function createDir(folderName) {
     try {
-        if (!fs.existsSync(folderName)) {
-            fs.mkdirSync(folderName, true);
+        if (!fs.existsSync("pdf")) {
+            fs.mkdirSync("pdf", true);
+        }
+        if (!fs.existsSync(`pdf/${folderName}`)) {
+            fs.mkdirSync(`pdf/${folderName}`, true);
         }
     } catch (err) {
         console.error(err);
     }
 }
 
-module.exports = createDir
+module.exports = createDir;

@@ -1,5 +1,6 @@
 const openConceptLinks = require("./conceptLinks");
 const createPDF = require("../utils/createPDF");
+const createDir = require("../utils/files");
 const removeUnwantedTags = require("../utils/removeTags");
 const { getPdfName } = require("../utils/formatPDFName");
 
@@ -19,10 +20,14 @@ async function processLinksSequentially(links, browser, cookies) {
 
             await removeUnwantedTags(projectPage);
 
-            await createPDF(projectPage, pdfName);
+            /* create directory for the project */
+            let dirName = `Project-${pdfName}-dir`;
+            await createDir(dirName);
+            let dirPath = `pdf/${dirName}/${pdfName}`;
+            await createPDF(projectPage, dirPath);
 
             /* PROCESS EACH LINKS IN THE CONCEPTS SECTION */
-            await openConceptLinks(projectPage, browser);
+            await openConceptLinks(projectPage, browser, dirName);
 
             // close browser window
             await projectBW.close();

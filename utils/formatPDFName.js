@@ -1,7 +1,7 @@
 async function getPdfName(page, target) {
     await page.waitForSelector(target);
     return await page.$eval(target, (ele) => {
-        const name = ele.innerText
+        let name = ele.innerText
             .trim()
             .slice(0, 55)
             .replace(/[\\'.,\/\s]+/g, "-")

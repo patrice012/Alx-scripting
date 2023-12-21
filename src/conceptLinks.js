@@ -3,7 +3,7 @@ const createPDF = require("../utils/createPDF");
 const removeUnwantedTags = require("../utils/removeTags");
 const { getPdfName } = require("../utils/formatPDFName");
 
-async function openConceptLinks(projectPage, browser) {
+async function openConceptLinks(projectPage, browser, dirName) {
     /* get all links */
     await projectPage.waitForSelector('div[class="panel panel-default"]');
 
@@ -46,7 +46,7 @@ async function openConceptLinks(projectPage, browser) {
             } else {
                 /* Use the document title as pdf name */
                 pdfName = await conceptPage.evaluate(() => {
-                    const name = document.title
+                    let name = document.title
                         .trim()
                         .slice(0, 55)
                         .replace(/[\\'.,\/\s]+/g, "-")
@@ -58,8 +58,8 @@ async function openConceptLinks(projectPage, browser) {
                 });
                 console.log(pdfName, "pdfName from document title");
             }
-
-            await createPDF(conceptPage, pdfName);
+            let pdfPath = `pdf/${dirName}/${pdfName}`;
+            await createPDF(conceptPage, pdfPath);
             // close browser window
             await conceptPage.close();
         })();
