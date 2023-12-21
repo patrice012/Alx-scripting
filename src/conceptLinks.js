@@ -17,11 +17,18 @@ async function openConceptLinks(projectPage, browser, dirName) {
     const projectLinks = await getAllResolvedURLs(hrefs);
     /* open each link */
     for (const link of projectLinks) {
-        if (!link.includes("https://s3.amazonaws.com/")) {
+        if (
+            link != "https://intranet.alxswe.com/rltoken/wYrZr3t3DeAE8PpYHYWGiw"
+        ) {
             await (async () => {
                 /* PROJECT LINKS */
-
                 const conceptPage = await browser.newPage();
+                // Listen for all requests
+                conceptPage.on("request", (req) => {
+                    // If the URL is amazon assets don't do anything
+                    if (req.url().includes("https://s3.amazonaws.com/")) return;
+                });
+
                 await conceptPage.goto(link, {
                     timeout: 0,
                     waitUntil: "networkidle2",
@@ -42,7 +49,7 @@ async function openConceptLinks(projectPage, browser, dirName) {
                     const target =
                         'h1[class="d-flex flex-column gap-2"] > span';
                     pdfName = await getPdfName(conceptPage, target);
-                    console.log(pdfName, "pdfName from concept page");
+
                     await removeUnwantedTags(conceptPage);
                 } else {
                     /* Use the document title as pdf name */
@@ -57,10 +64,15 @@ async function openConceptLinks(projectPage, browser, dirName) {
                         }
                         return name + ".pdf";
                     });
-                    console.log(pdfName, "pdfName from document title");
                 }
                 let pdfPath = `pdf/${dirName}/${pdfName}`;
-                await createPDF(conceptPage, pdfPath);
+                /* Check if it's an amazon assets */
+                let siteUrl = await conceptPage.evaluate(
+                    () => window.location.href
+                );
+                if (!siteUrl.includes("https://s3.amazonaws.com/")) {
+                    await createPDF(conceptPage, pdfPath);
+                }
 
                 // close page window
                 await conceptPage.close();
