@@ -17,49 +17,55 @@ async function openConceptLinks(projectPage, browser, dirName) {
     const projectLinks = await getAllResolvedURLs(hrefs);
     /* open each link */
     for (const link of projectLinks) {
-        await (async () => {
-            /* PROJECT LINKS */
+        if (!link.includes("https://s3.amazonaws.com/")) {
+            await (async () => {
+                /* PROJECT LINKS */
 
-            const conceptPage = await browser.newPage();
-            await conceptPage.goto(link, { timeout: 0 });
-
-            try {
-                await loginProcess(conceptPage);
-            } catch (error) {
-                console.log(error);
-                await conceptPage.waitForNavigation({
-                    waitFor: "networkidle0",
+                const conceptPage = await browser.newPage();
+                await conceptPage.goto(link, {
+                    timeout: 0,
+                    waitUntil: "networkidle2",
                 });
-            }
 
-            // format PDF name based on project name
-            let pdfName = "";
-            if (link.includes("https://intranet.alxswe.com/concepts")) {
-                const target = 'h1[class="d-flex flex-column gap-2"] > span';
-                pdfName = await getPdfName(conceptPage, target);
-                console.log(pdfName, "pdfName from concept page");
-                await removeUnwantedTags(conceptPage);
-            } else {
-                /* Use the document title as pdf name */
-                pdfName = await conceptPage.evaluate(() => {
-                    let name = document.title
-                        .trim()
-                        .slice(0, 55)
-                        .replace(/[\\'.,\/\s]+/g, "-")
-                        .replace(/-+/g, "-");
-                    if (!name.length >= 1) {
-                        name = "default-name";
-                    }
-                    return name + ".pdf";
-                });
-                console.log(pdfName, "pdfName from document title");
-            }
-            let pdfPath = `pdf/${dirName}/${pdfName}`;
-            await createPDF(conceptPage, pdfPath);
-            
-            // close page window
-            await conceptPage.close();
-        })();
+                try {
+                    await loginProcess(conceptPage);
+                } catch (error) {
+                    console.log(error);
+                    await conceptPage.waitForNavigation({
+                        waitFor: "networkidle2",
+                    });
+                }
+
+                // format PDF name based on project name
+                let pdfName = "";
+                if (link.includes("https://intranet.alxswe.com/concepts")) {
+                    const target =
+                        'h1[class="d-flex flex-column gap-2"] > span';
+                    pdfName = await getPdfName(conceptPage, target);
+                    console.log(pdfName, "pdfName from concept page");
+                    await removeUnwantedTags(conceptPage);
+                } else {
+                    /* Use the document title as pdf name */
+                    pdfName = await conceptPage.evaluate(() => {
+                        let name = document.title
+                            .trim()
+                            .slice(0, 55)
+                            .replace(/[\\'.,\/\s]+/g, "-")
+                            .replace(/-+/g, "-");
+                        if (!name.length >= 1) {
+                            name = "default-name";
+                        }
+                        return name + ".pdf";
+                    });
+                    console.log(pdfName, "pdfName from document title");
+                }
+                let pdfPath = `pdf/${dirName}/${pdfName}`;
+                await createPDF(conceptPage, pdfPath);
+
+                // close page window
+                await conceptPage.close();
+            })();
+        }
 
         // Introduce a delay between iterations
         // await new Promise((resolve) => setTimeout(resolve, 1000));

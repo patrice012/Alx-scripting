@@ -9,7 +9,6 @@ const broswerView = {
     headless: false,
     defaultViewport: null,
     args: ["--start-maximized"],
-    userDataDir: "./tmp",
 };
 
 module.exports = { BASE_URL, EMAIL, PASSWORD, broswerView };
