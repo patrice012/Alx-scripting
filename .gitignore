@@ -1,6 +1,9 @@
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
+//test copilot ✊
+.copilotignore
+
 # Dependency directories
 node_modules/
 jspm_packages/
