@@ -1,39 +1,49 @@
+// handles concept links
 const openConceptLinks = require("./conceptLinks");
+//utils
 const createPDF = require("../utils/createPDF");
-const createDir = require("../utils/files");
+const {createDir} = require("../utils/files");
 const removeUnwantedTags = require("../utils/removeTags");
 const { getPdfName } = require("../utils/formatPDFName");
+const {loadCookies} = require("../utils/cookies");
 
-async function processLinksSequentially(links, browser, cookies) {
-    for (const link of links) {
-        await (async () => {
-            /* PROJECT LINKS */
-            const projectBW = await browser.createIncognitoBrowserContext();
-            const projectPage = await projectBW.newPage();
-            await projectPage.setCookie(...cookies);
-            await projectPage.goto(link, { timeout: 0 });
+async function processLinksSequentially(links, browser) {
+  for (const link of links) {
+    await (async () => {
 
-            // format PDF name based on project name
-            const pdfName = await getPdfName(projectPage, 'h1[class="gap"]');
+      /* PROJECT LINKS */
+      const projectBW = await browser.createIncognitoBrowserContext();
+      const projectPage = await projectBW.newPage();
 
-            await removeUnwantedTags(projectPage);
+      // get saved cookies
+      const cookies = await loadCookies();
+      await projectPage.setCookie(...cookies);
 
-            /* create directory for the project */
-            let dirName = `Project-${pdfName}-dir`;
-            await createDir(dirName);
-            let dirPath = `pdf/${dirName}/${pdfName}`;
-            await createPDF(projectPage, dirPath);
+      // navigate to project page
+      await projectPage.goto(link, { timeout: 0 });
 
-            /* PROCESS EACH LINKS IN THE CONCEPTS SECTION */
-            await openConceptLinks(projectPage, browser, dirName);
+      // format PDF name based on project name
+      const pdfName = await getPdfName(projectPage, 'h1[class="gap"]');
 
-            // close browser window
-            await projectBW.close();
-        })();
+      // remove unwanted tags
+      await removeUnwantedTags(projectPage);
 
-        // Introduce a delay between iterations
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+      /* create directory for the project */
+      let dirName = `Project-${pdfName}-dir`;
+      await createDir(dirName);
+      let dirPath = `pdf/${dirName}/${pdfName}`;
+      await createPDF(projectPage, dirPath);
+
+      /* process each links in concept section */
+      await openConceptLinks(projectPage, browser, dirName);
+
+      // close browser window
+      await projectBW.close();
+    })();
+
+    // Introduce a delay between iterations
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
 }
 
 module.exports = processLinksSequentially;
