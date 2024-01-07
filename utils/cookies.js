@@ -1,37 +1,37 @@
-// file path: utils/cookies.js
-const _filePath = `${__dirname}/cookies.json`;
 // const fs = require("fs");
-const fs = require("fs").promises;
+const fs = require("node:fs");
+// const fs = require("fs").promises;
+const path = require("node:path");
+// Root path
+const { ROOT } = require("../config");
+// process file path
+let _filePath = path.normalize(`${ROOT}/cookies.json`);
+
 // utils
 const { createFileIFNotExists } = require("./files");
 
-const saveCookies = async (cookies) => {
+const saveCookies = (cookies) => {
   let filePath = _filePath;
-  return (async () => {
-    try {
-      await fs.writeFile(filePath, JSON.stringify(cookies, null, 2));
-      console.log("Cookies saved successfully!");
-    } catch (error) {
-      console.log(error);
-    }
-  })();
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+    console.log("Cookies saved successfully!");
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const loadCookies = async () => {
+const loadCookies = () => {
   let filePath = _filePath;
-  return (async () => {
-    let cookies = {};
-    try {
-      createFileIFNotExists(filePath);
-      //load cookies
-      const cookiesString = await fs.readFile(filePath, "utf8");
-      cookies = JSON.parse(cookiesString);
-    } catch (error) {
-      // console.log(error);
-    } finally {
-      return cookies;
-    }
-  })();
+  let cookies = [];
+  try {
+    createFileIFNotExists(filePath);
+    //load cookies
+    cookies = fs.readFileSync(filePath, "utf8");
+    return cookies;
+  } catch (error) {
+    console.log(error);
+  }
+  // return cookies;
 };
 
 module.exports = { saveCookies, loadCookies };

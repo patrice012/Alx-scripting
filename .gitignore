@@ -4,6 +4,9 @@ build/Release
 //test copilot ✊
 .copilotignore
 
+cookies.*
+test.js
+
 # Dependency directories
 node_modules/
 jspm_packages/

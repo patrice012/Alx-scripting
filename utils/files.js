@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { ROOT } = require("../config");
 
 async function createDir(folderName) {
   try {
@@ -31,4 +32,17 @@ const createFileIFNotExists = (filePath) => {
   });
 };
 
-module.exports = { createDir, createFileIFNotExists };
+const writeToFile = (data) => {
+  let filePath = `${ROOT}/analytics/state.log`;
+
+  if (!fs.existsSync(`${ROOT}/analytics`)) {
+    fs.mkdirSync(`${ROOT}/analytics`, true);
+  }
+  fs.appendFile(filePath, data, (err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
+};
+
+module.exports = { createDir, createFileIFNotExists, writeToFile };
