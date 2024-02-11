@@ -27,7 +27,7 @@ const loadCookies = () => {
     createFileIFNotExists(filePath);
     //load cookies
     cookies = fs.readFileSync(filePath, "utf8");
-    return cookies;
+    return JSON.parse(cookies);
   } catch (error) {
     console.log(error);
   }

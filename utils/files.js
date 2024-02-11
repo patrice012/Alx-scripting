@@ -3,12 +3,9 @@ const { ROOT } = require("../config");
 
 async function createDir(folderName) {
   try {
-    if (!fs.existsSync("pdf")) {
-      fs.mkdirSync("pdf", true);
-    }
-    if (!fs.existsSync(`pdf/${folderName}`)) {
-      fs.mkdirSync(`pdf/${folderName}`, true);
-    }
+    fs.mkdir(`${folderName}`, { recursive: true }, (err) => {
+      if (err) throw err;
+    });
   } catch (err) {
     console.error(err);
   }
@@ -36,7 +33,9 @@ const writeToFile = (data) => {
   let filePath = `${ROOT}/analytics/state.log`;
 
   if (!fs.existsSync(`${ROOT}/analytics`)) {
-    fs.mkdirSync(`${ROOT}/analytics`, true);
+    fs.mkdir(`${ROOT}/analytics`, { recursive: true }, (err) => {
+      if (err) throw err;
+    });
   }
   fs.appendFile(filePath, data, (err) => {
     if (err) {
