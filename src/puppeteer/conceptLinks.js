@@ -1,4 +1,4 @@
-const loginProcess = require("./auth");
+const loginProcess = require("../auth/auth");
 const createPDF = require("../../utils/createPDF");
 const removeUnwantedTags = require("../../utils/removeTags");
 const { getPdfName } = require("../../utils/formatPDFName");
