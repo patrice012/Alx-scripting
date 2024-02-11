@@ -10,7 +10,7 @@ const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
 
 const broswerView = {
-  headless: false,
+  headless: false, //new,
   defaultViewport: null,
   args: ["--start-maximized"],
 };
