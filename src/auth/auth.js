@@ -9,6 +9,7 @@ const delay = { delay: 200 };
 async function loginProcess(page) {
   const loginBox = await page.$('div[class="logged_out_form"]');
   if (loginBox) {
+    
     /* fill email form */
     const emailInput = await page.$('input[id="user_email"]');
     await emailInput.type(EMAIL, delay);
