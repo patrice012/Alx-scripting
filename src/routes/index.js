@@ -11,8 +11,6 @@ router.get("/projects", ProjectController.getProjects);
 router.get("/project/:id", ProjectController.getProject);
 router.get("/project/:id/resources", ProjectController.getProjectResources);
 
-
-
 router.post("/create-resource", ResourceController.createResource);
 router.patch("/update-resource", ResourceController.updateResource);
 router.delete("/resource/:id", ResourceController.deleteResource);
