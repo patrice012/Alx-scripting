@@ -11,7 +11,7 @@ const { loadCookies, saveCookies } = require("../../utils/cookies");
 
 const startJob = async () => {
   const browser = await puppeteer.launch(broswerView);
-  const url = new URL(BASE_URL);
+  const url = new URL("https://intranet.alxswe.com/curriculums/1/observe");
   const page = await browser.newPage();
 
   // authentification process
@@ -29,10 +29,12 @@ const startJob = async () => {
       // use saved cookies
       await page.setCookie(...cookies);
       await page.goto(url, { timeout: 0 });
+      await saveCookies(await page.cookies());
     }
   } catch (error) {
     console.log(error);
   }
+  // const cookies = await loadCookies();
 
   // open modal view
   await page.waitForSelector('a[data-target="#period_scores_modal_1"]', {
@@ -42,12 +44,20 @@ const startJob = async () => {
   await modalBox.click();
 
   // get all links in popup
-  await page.waitForSelector('table[class="table"] a', {
-    visible: true,
+  // await page.waitForSelector('table[class="table"] a', {
+  //   visible: true,
+  // });
+  // const links = await page.$$eval('table[class="table"] a', (links) =>
+  //   links.map((link) => link.href)
+  // );
+
+  // get fondation links
+  const links = await page.$$eval('table[class="table"]', (table) => {
+    let foundationTable = table[1];
+    let links = Array.from(foundationTable.querySelectorAll("a"));
+    return links.map((link) => link.href);
   });
-  const links = await page.$$eval('table[class="table"] a', (links) =>
-    links.map((link) => link.href)
-  );
+
 
   try {
     /* expose custom function in DOM */

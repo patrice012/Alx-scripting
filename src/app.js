@@ -8,6 +8,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const router = require("./routes");
+const scrapingResources = require("./puppeteerCluster/job");
 const morgan = require("morgan");
 
 // // cors
@@ -76,6 +77,8 @@ mongoose.connect(process.env.DB_URI, (err) => {
 server.get("/", (req, res) => {
   res.status(200).send("Server up");
 });
+
+server.post("/scraping", scrapingResources);
 
 server.use("/api/v1", router);
 

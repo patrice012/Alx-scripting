@@ -11,8 +11,8 @@ async function processLinksSequentially(links, browser) {
   for (const link of links) {
     await (async () => {
       /* PROJECT LINKS */
-      const projectBW = await browser.createIncognitoBrowserContext();
-      const projectPage = await projectBW.newPage();
+      // const projectBW = await browser.createIncognitoBrowserContext();
+      const projectPage = await browser.newPage();
 
       // get saved cookies
       const cookies = await loadCookies();
@@ -30,7 +30,7 @@ async function processLinksSequentially(links, browser) {
       /* create directory for the project */
       let dirName = `Project-${pdfName}-dir`;
       await createDir(dirName);
-      let dirPath = `pdf/${dirName}/${pdfName}`;
+      let dirPath = `${dirName}/${pdfName}`;
       await createPDF(projectPage, dirPath);
 
       /* process each links in concept section */

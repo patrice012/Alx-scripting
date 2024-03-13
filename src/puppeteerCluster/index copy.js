@@ -62,23 +62,16 @@ const scrapData = async () => {
         // save cookies for the next time
         saveCookies(cookies);
       } else {
-        let _cookies = state.cookies;
-        console.log(_cookies, "cookies");
-        await page.setCookie(..._cookies);
+        let cookies = state.cookies;
+        console.log(cookies, "cookies");
+        await page.setCookie(...cookies);
         await page.goto(url, { timeout: 0 });
-        // get cookies
-        let cookies = await page.cookies();
-        state.cookies = cookies;
-
-        // save cookies for the next time
-        saveCookies(cookies);
       }
     } catch (error) {
       state.error = error;
       console.log(error, "error");
     }
 
-    state.cookies = await page.cookies();
     console.log(state.cookies, "cookies saved");
 
     if (state.error) {
@@ -86,20 +79,41 @@ const scrapData = async () => {
       return;
     }
 
-    // const curriculumDropdownItems = await getCurriculumnTypes(page);
+    const curriculumDropdownItems = await getCurriculumnTypes(page);
 
-    await foundationCurriculumScraping(cluster, page);
+    // SEFoundation
+    const SEFoundation = curriculumDropdownItems[0];
 
-    await specialisationCurriculumScraping(cluster, page);
+    console.log(SEFoundation, "SEFoundation");
+
+    await foundationCurriculumScraping(
+      cluster,
+      SEFoundation,
+      page,
+      state.cookies
+    );
+
+    // go back home
+    await page.goto(url, { timeout: 0 });
+
+    // SESpecialisation
+    const SESpecialisation = curriculumDropdownItems[1];
+
+    console.log(SESpecialisation, "SESpecialisation");
+
+    await specialisationCurriculumScraping(
+      cluster,
+      SESpecialisation,
+      page,
+      state.cookies
+    );
   });
 
   await cluster.idle();
   await cluster.close();
 };
 
-scrapData();
-
-// module.exports = scrapData;
+module.exports = scrapData;
 
 // specialisation and foundation curriculum scraping
 const getCurriculumnTypes = async (page) => {
@@ -238,16 +252,24 @@ const scrapingConceptPageResources = async (page, url, cookies, dirName) => {
 };
 
 // utils
-const foundationCurriculumScraping = async (cluster, page) => {
-  await page.goto("https://intranet.alxswe.com/curriculums/1/observe", {
-    timeout: 0,
-  });
+const foundationCurriculumScraping = async (
+  cluster,
+  SEFoundation,
+  page,
+  cookies
+) => {
+  // loop throught each type
+  await Promise.all([
+    SEFoundation.click(),
+    page.waitForNavigation({ waitFor: "networkidle0", timeout: 0 }),
+  ]);
 
-  let cookies = await page.cookies();
-  console.log(cookies, "cookies saved");
+  const SEFoundationUrl = "https://intranet.alxswe.com/curriculums/1/observe";
+
+  await page.goto(SEFoundationUrl, { timeout: 0 });
 
   // links scraping
-  await page.screenshot({ path: "foundation.png" });
+  await page.screenshot({ path: "home.png" });
 
   // Foundation part - Scrap each project link
   const foundationLinks = await getFoundationLinks(page);
@@ -279,17 +301,20 @@ const foundationCurriculumScraping = async (cluster, page) => {
   }
 };
 
-const specialisationCurriculumScraping = async (cluster, page) => {
+const specialisationCurriculumScraping = async (
+  cluster,
+  SESpecialisation,
+  page,
+  cookies
+) => {
   // loop throught each type
-  await page.goto("https://intranet.alxswe.com/curriculums/17/observe", {
-    timeout: 0,
-  });
-
-  let cookies = await page.cookies();
-  console.log(cookies, "cookies saved");
+  await Promise.all([
+    SESpecialisation.click(),
+    page.waitForNavigation({ waitFor: "networkidle0", timeout: 0 }),
+  ]);
 
   // links scraping
-  await page.screenshot({ path: "specialisation.png" });
+  await page.screenshot({ path: "home.png" });
 
   // Foundation part - Scrap each project link
   const specialisationLinks = await getSpecialisationsLinks(page);

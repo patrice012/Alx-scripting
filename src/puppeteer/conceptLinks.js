@@ -63,7 +63,7 @@ async function openConceptLinks(projectPage, browser, dirName) {
             return name + ".pdf";
           });
         }
-        let pdfPath = `pdf/${dirName}/${pdfName}`;
+        let pdfPath = `${dirName}/${pdfName}`;
         /* Check if it's an amazon assets */
         let siteUrl = await conceptPage.evaluate(() => window.location.href);
         if (!siteUrl.includes("https://s3.amazonaws.com/")) {
