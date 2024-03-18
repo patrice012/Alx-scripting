@@ -13,11 +13,12 @@ const createPDF = require("../../utils/createPDF");
 const { createDir, writeToFile } = require("../../utils/files");
 const removeUnwantedTags = require("../../utils/removeTags");
 const { getPdfName } = require("../../utils/formatPDFName");
+const postRequest = require("../../utils/postReq");
 
 const scrapData = async () => {
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 6,
+    maxConcurrency: 4,
     timeout: 960000,
     retryLimit: 2,
     retryDelay: 5000,
@@ -199,15 +200,31 @@ const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
     }
   );
 
-  return { dirName, links };
+  const reqData = {
+    name: pdfName,
+    curriculum: curriculumType,
+    resources: [...links],
+  };
+
+  const serverRes = await postRequest("/api/v1/project", reqData);
+
+  console.log(serverRes, "serverRes");
+
+  return { dirName, links, conceptPageName: pdfName };
 };
 
-const scrapingConceptPageResources = async (page, url, cookies, dirName) => {
+const scrapingConceptPageResources = async (
+  page,
+  url,
+  cookies,
+  dirName,
+  conceptPageName
+) => {
   // set pages cookies
   await page.setCookie(...cookies);
 
   // navigate to project page
-  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
+  await page.goto(url, { timeout: 0 });
 
   // format PDF name based on project name
   let pdfName = "";
@@ -231,11 +248,65 @@ const scrapingConceptPageResources = async (page, url, cookies, dirName) => {
     });
   }
 
+  /* create directory for the project */
+  await createDir(dirName);
+
   let pdfPath = `${dirName}/${pdfName}`;
   /* Check if it's an amazon assets */
-  // let siteUrl = await page.evaluate(() => window.location.href);
   await createPDF(page, pdfPath);
+
+  let siteUrl = await page.evaluate(() => window.location.href);
+  const reqData = {
+    name: pdfName,
+    link: siteUrl,
+    type: url.includes("https://intranet.alxswe.com/concepts")
+      ? "ALX"
+      : "External",
+    project: conceptPageName,
+  };
+
+  const serverRes = await postRequest("/api/v1/resource", reqData);
+
+  console.log(serverRes, "serverRes");
 };
+
+async function queueTasksSequentially(links, cookies, cluster) {
+  for (let link of links) {
+    await new Promise((resolve, reject) => {
+      cluster.task(async ({ page, data: url }) => {
+        try {
+          const COOKIES = cookies;
+          const { dirName, links: conceptLinks } = await scrapingConceptPage(
+            page,
+            url,
+            COOKIES,
+            "Foundation"
+          );
+
+          cluster.task(async ({ page, data: url }) => {
+            await scrapingConceptPageResources(page, url, COOKIES, dirName);
+          });
+
+          for (let link of conceptLinks) {
+            // add project's concept links to queue
+            await cluster.queue(link);
+          }
+
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      // add project links to queue
+      cluster.queue(link);
+    });
+  }
+}
+
+// queueTasksSequentially(foundationLinks)
+//   .then(() => console.log("All tasks completed"))
+//   .catch((err) => console.error("An error occurred:", err));
 
 // utils
 const foundationCurriculumScraping = async (cluster, page) => {
@@ -254,22 +325,40 @@ const foundationCurriculumScraping = async (cluster, page) => {
 
   console.log(foundationLinks, "foundationLinks");
 
+  const reqData = {
+    name: "Foundation",
+    links: foundationLinks,
+  };
+
+  const serverRes = await postRequest("/api/v1/curriculum", reqData);
+
+  console.log(serverRes, "serverRes");
+
+  // await queueTasksSequentially(foundationLinks, cookies, cluster);
+
   cluster.task(async ({ page, data: url }) => {
     const COOKIES = cookies;
-    const { dirName, links: conceptLinks } = await scrapingConceptPage(
-      page,
-      url,
-      COOKIES,
-      "SEFoundation"
-    );
+    const {
+      dirName,
+      conceptPageName,
+      links: conceptLinks,
+    } = await scrapingConceptPage(page, url, COOKIES, "Foundation");
 
-    cluster.task(async ({ page, data: url }) => {
-      await scrapingConceptPageResources(page, url, COOKIES, dirName);
-    });
+    if (conceptLinks) {
+      cluster.task(async ({ page, data: url }) => {
+        await scrapingConceptPageResources(
+          page,
+          url,
+          COOKIES,
+          dirName,
+          conceptPageName
+        );
+      });
 
-    for (let link of conceptLinks) {
-      // add project's concept links to queue
-      await cluster.queue(link);
+      for (let link of conceptLinks) {
+        // add project's concept links to queue
+        await cluster.queue(link);
+      }
     }
   });
 
@@ -296,17 +385,34 @@ const specialisationCurriculumScraping = async (cluster, page) => {
 
   console.log(specialisationLinks, "specialisationLinks");
 
+  const reqData = {
+    name: "Specialisation",
+    // status: true,
+    links: specialisationLinks,
+  };
+
+  const serverRes = await postRequest("/api/v1/curriculum", reqData);
+
+  console.log(serverRes, "serverRes");
+
+  // await queueTasksSequentially(specialisationLinks, cookies, cluster);
+
   cluster.task(async ({ page, data: url }) => {
     const COOKIES = cookies;
-    const { dirName, links: conceptLinks } = await scrapingConceptPage(
-      page,
-      url,
-      COOKIES,
-      "SESpecialisation"
-    );
+    const {
+      dirName,
+      conceptPageName,
+      links: conceptLinks,
+    } = await scrapingConceptPage(page, url, COOKIES, "Specialisation");
 
     cluster.task(async ({ page, data: url }) => {
-      await scrapingConceptPageResources(page, url, COOKIES, dirName);
+      await scrapingConceptPageResources(
+        page,
+        url,
+        COOKIES,
+        dirName,
+        conceptPageName
+      );
     });
 
     for (let link of conceptLinks) {

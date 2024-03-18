@@ -12,8 +12,9 @@ const projectSchema = new Schema(
       type: String,
       required: true,
     },
-    description: {
-      type: String,
+    curriculumId: {
+      type: Schema.Types.ObjectId,
+      ref: "Curriculum",
     },
     scrapeDate: {
       type: Date,
@@ -32,28 +33,3 @@ const projectSchema = new Schema(
 );
 
 module.exports = mongoose.model("Project", projectSchema);
-
-const resoureSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  link: {
-    type: String,
-    required: true,
-  },
-  type: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: Boolean,
-    default: false,
-  },
-  project: {
-    type: Schema.Types.ObjectId,
-    ref: "Project",
-  },
-});
-
-module.exports = mongoose.model("Resource", resoureSchema);

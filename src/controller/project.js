@@ -3,7 +3,8 @@ const {
   updateProjectSchemaValidator,
   findProjectSchemaValidator,
 } = require("../db/validator");
-const Project = require("../db/model");
+const Project = require("../db/project.model");
+const Curriculum = require("../db/curriculum.model");
 
 class ProjectController {
   static async createProject(req, res) {
@@ -12,8 +13,27 @@ class ProjectController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
-      const project = new Project(req.body);
-      await project.save();
+
+      const { name, curriculum, resources } = req.body;
+      const query = { name: name };
+      const projectData = { name, curriculum, resources, status: true };
+
+      const curriculumId = await Curriculum.findOne({
+        name: curriculum,
+      }).select(["_id"]);
+
+      if (curriculumId) {
+        projectData["curriculumId"] = curriculumId;
+      }
+
+      let project = await Project.findOne(query);
+
+      if (!project) {
+        // Project doesn't exist, create a new one
+        project = new Project(projectData);
+        await project.save();
+      }
+
       const data = {
         payload: project,
       };

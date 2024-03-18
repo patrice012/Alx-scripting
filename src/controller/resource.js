@@ -3,7 +3,8 @@ const {
   updateResourceSchemaValidator,
   findResourceSchemaValidator,
 } = require("../db/validator");
-const Resource = require("../db/model");
+const Resource = require("../db/resource.model");
+const Project = require("../db/project.model");
 
 class ResourceController {
   static async createResource(req, res) {
@@ -12,14 +13,40 @@ class ResourceController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
-      const resource = new Resource(req.body);
-      await resource.save();
-      const data = {
-        payload: resource,
-      };
-      res.status(201).json(data);
+
+      const projectId = await Project.findOne({
+        name: req.body.project,
+      }).select(["_id"]);
+      console.log(projectId, "projectId");
+
+      if (projectId) {
+        req.body.projectId = projectId;
+      }
+
+      const { name, link, type, project } = req.body;
+
+      const query = { name: name };
+      const resourceData = { name, link, type, project, status: true };
+
+      try {
+        let resource = await Resource.findOne(query);
+
+        if (!resource) {
+          // Resource doesn't exist, create a new one
+          resource = new Resource(resourceData);
+          await resource.save();
+        }
+
+        console.log("Resource:", resource);
+        const data = {
+          payload: resource,
+        };
+        return res.status(201).json(data);
+      } catch (err) {
+        console.error(err);
+      }
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
