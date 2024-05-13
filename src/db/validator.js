@@ -4,7 +4,9 @@ const projectSchemaValidator = Joi.object({
   name: Joi.string().required(),
   curriculum: Joi.string().required(),
   resources: Joi.array().required(),
-  // status: Joi.boolean(),
+  projectLink: Joi.string(),
+  dirName: Joi.string(),
+  conceptPageName: Joi.string(),
 });
 
 const updateProjectSchemaValidator = Joi.object({
@@ -23,6 +25,7 @@ const resourceSchemaValidator = Joi.object({
   type: Joi.string().required(),
   // status: Joi.boolean(),
   project: Joi.string().required(),
+  relatedLinks: Joi.array(),
 });
 
 const updateResourceSchemaValidator = Joi.object({

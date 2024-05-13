@@ -43,13 +43,6 @@ const startJob = async () => {
   const modalBox = await page.$('a[data-target="#period_scores_modal_1"]');
   await modalBox.click();
 
-  // get all links in popup
-  // await page.waitForSelector('table[class="table"] a', {
-  //   visible: true,
-  // });
-  // const links = await page.$$eval('table[class="table"] a', (links) =>
-  //   links.map((link) => link.href)
-  // );
 
   // get fondation links
   const links = await page.$$eval('table[class="table"]', (table) => {
@@ -63,7 +56,7 @@ const startJob = async () => {
     /* expose custom function in DOM */
     await page.exposeFunction("_format", _format);
     /* process each links */
-    await processLinksSequentially(links, browser);
+    await processLinksSequentially(links, browser, "foundation");
   } catch (error) {
     console.log(error);
   }

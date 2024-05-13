@@ -21,6 +21,9 @@ class CurriculumController {
           // Curriculum doesn't exist, create a new one
           curriculum = new Curriculum(curriculumData);
           await curriculum.save();
+        } else {
+          // Curriculum exists, update the curriculum
+          curriculum = await Curriculum.updateOne(query, curriculumData);
         }
 
         console.log("Curriculum:", curriculum);

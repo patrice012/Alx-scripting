@@ -38,4 +38,5 @@ lerna-debug.log*
 tmp
 pdf
 pdf-1
+pdf-*
 *.png

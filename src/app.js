@@ -8,7 +8,12 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const router = require("./routes");
-// const scrapingResources = require("./puppeteerCluster/job");
+const {
+  scrapingFoundationResources,
+  scrapingSpecialisationResources,
+  scrapingResources,
+} = require("./puppeteerCluster/job");
+const runTestScript = require("./puppeteerCluster/testJob");
 const morgan = require("morgan");
 
 // // cors
@@ -64,6 +69,25 @@ server.use(bodyParser.json());
 // morgan
 server.use(morgan("dev"));
 
+server.use("/api/v1", router);
+
+// default route
+server.get("/", (req, res) => {
+  res.status(200).send("Server up");
+});
+
+server.get("/foundation-job", scrapingFoundationResources);
+
+server.get("/specialisation-job", scrapingSpecialisationResources);
+
+server.get("/resources-job", scrapingResources);
+
+server.get("/test-job", runTestScript);
+
+server.listen(process.env.PORT, () =>
+  console.log(`app listen on port ${process.env.PORT}`)
+);
+
 // connect mongoose
 mongoose.set("strictQuery", false);
 mongoose.connect(process.env.DB_URI, (err) => {
@@ -73,15 +97,3 @@ mongoose.connect(process.env.DB_URI, (err) => {
     console.log("connected to db");
   }
 });
-
-server.get("/", (req, res) => {
-  res.status(200).send("Server up");
-});
-
-// server.post("/scraping", scrapingResources);
-
-server.use("/api/v1", router);
-
-server.listen(process.env.PORT, () =>
-  console.log(`app listen on port ${process.env.PORT}`)
-);

@@ -23,10 +23,17 @@ class ResourceController {
         req.body.projectId = projectId;
       }
 
-      const { name, link, type, project } = req.body;
+      const { name, link, type, project, relatedLinks } = req.body;
 
       const query = { name: name };
-      const resourceData = { name, link, type, project, status: true };
+      const resourceData = {
+        name,
+        link,
+        type,
+        project,
+        relatedLinks,
+        status: true,
+      };
 
       try {
         let resource = await Resource.findOne(query);
@@ -35,6 +42,9 @@ class ResourceController {
           // Resource doesn't exist, create a new one
           resource = new Resource(resourceData);
           await resource.save();
+        } else {
+          // Resource exists, update the resource
+          resource = await Resource.updateOne(query, resourceData);
         }
 
         console.log("Resource:", resource);

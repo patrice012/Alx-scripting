@@ -24,12 +24,25 @@ const projectSchema = new Schema(
       type: Array,
       required: true,
     },
+    projectLink: {
+      type: String,
+      required: true,
+    },
     status: {
       type: Boolean,
       default: false,
     },
+    dirName: {
+      type: String,
+    },
+    conceptPageName: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
+
+// add index on curriculum field
+projectSchema.index({ curriculum: 1, name: 1 });
 
 module.exports = mongoose.model("Project", projectSchema);

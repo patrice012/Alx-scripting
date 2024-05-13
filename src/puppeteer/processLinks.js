@@ -7,7 +7,7 @@ const removeUnwantedTags = require("../../utils/removeTags");
 const { getPdfName } = require("../../utils/formatPDFName");
 const { loadCookies } = require("../../utils/cookies");
 
-async function processLinksSequentially(links, browser) {
+async function processLinksSequentially(links, browser, typeCur) {
   for (const link of links) {
     await (async () => {
       /* PROJECT LINKS */
@@ -28,7 +28,7 @@ async function processLinksSequentially(links, browser) {
       await removeUnwantedTags(projectPage);
 
       /* create directory for the project */
-      let dirName = `Project-${pdfName}-dir`;
+      let dirName = `pdf/${typeCur}/Project-${pdfName}-dir`;
       await createDir(dirName);
       let dirPath = `${dirName}/${pdfName}`;
       await createPDF(projectPage, dirPath);

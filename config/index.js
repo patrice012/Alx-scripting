@@ -15,8 +15,17 @@ const broswerView = {
   args: ["--start-maximized"],
 };
 
+const PDF_ROUTE='pdf'
+
 // process file path
 let normalizePath = path.normalize(_filePath);
 let _dirname = path.dirname(normalizePath);
 
-module.exports = { BASE_URL, EMAIL, PASSWORD, broswerView, ROOT: _dirname };
+module.exports = {
+  BASE_URL,
+  EMAIL,
+  PASSWORD,
+  broswerView,
+  ROOT: _dirname,
+  PDF_ROUTE,
+};

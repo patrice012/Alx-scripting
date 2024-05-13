@@ -14,9 +14,24 @@ class ProjectController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const { name, curriculum, resources } = req.body;
+      const {
+        name,
+        curriculum,
+        resources,
+        projectLink,
+        dirName,
+        conceptPageName,
+      } = req.body;
       const query = { name: name };
-      const projectData = { name, curriculum, resources, status: true };
+      const projectData = {
+        name,
+        curriculum,
+        resources,
+        status: true,
+        projectLink,
+        conceptPageName,
+        dirName,
+      };
 
       const curriculumId = await Curriculum.findOne({
         name: curriculum,
@@ -32,12 +47,17 @@ class ProjectController {
         // Project doesn't exist, create a new one
         project = new Project(projectData);
         await project.save();
+      } else {
+        // Project exists, update the project
+        project = await Project.updateOne(query, projectData);
       }
 
+      // console.log("Project:", project);
       const data = {
         payload: project,
       };
       res.status(201).json(data);
+
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

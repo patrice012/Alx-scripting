@@ -28,6 +28,9 @@ const resoureSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Project",
     },
+    relatedLinks: {
+      type: Array,
+    },
   },
   { timestamps: true }
 );
