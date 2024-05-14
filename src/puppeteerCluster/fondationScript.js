@@ -13,9 +13,7 @@ const foundationCurriculumScraping = async (cluster, page) => {
   await page.screenshot({ path: "foundation.png" });
 
   // Foundation part - Scrap each project link
-  let { foundationLinks, names } = await getFoundationLinks(page);
-
-  foundationLinks = ["https://intranet.alxswe.com/projects/311"];
+  const { foundationLinks, names } = await getFoundationLinks(page);
 
   const reqData = {
     name: "Foundation",
@@ -23,7 +21,7 @@ const foundationCurriculumScraping = async (cluster, page) => {
   };
 
   const serverRes = await postRequest("/api/v1/curriculum", reqData);
-  console.log("Curiiculum data posted to server");
+  console.log("Curriculum data posted to server");
 
   cluster.task(async ({ page, data: url }) => {
     try {

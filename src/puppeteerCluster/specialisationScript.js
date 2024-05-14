@@ -21,7 +21,7 @@ const specialisationCurriculumScraping = async (cluster, page) => {
   };
 
   const serverRes = await postRequest("/api/v1/curriculum", reqData);
-  console.log("Curiiculum data posted to server");
+  console.log("Curriculum data posted to server");
 
   cluster.task(async ({ page, data: url }) => {
     try {

@@ -5,7 +5,7 @@ const getProjectsMetadata = require("./getProjectLinks");
 const getResoursesMetadata = require("./getResourcesLinks");
 const { scrapingConceptPageResources } = require("./script");
 const newCluster = require("./newCluster");
-const { BASE_URL } = require("../../config");
+const { PDF_ROUTE } = require("../../config");
 
 const foundationScrapingHelper = async () => {
   try {
@@ -102,7 +102,7 @@ const scrapingResourcesHelper = async () => {
             await scrapingConceptPageResources(
               page,
               url,
-              `${BASE_URL}/resources/${items.project}`,
+              `${PDF_ROUTE}/resources/${items.project}`,
               items.project
             );
           } catch (error) {
