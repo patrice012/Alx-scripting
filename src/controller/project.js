@@ -3,6 +3,7 @@ const {
   updateProjectSchemaValidator,
   findProjectSchemaValidator,
 } = require("../db/validator");
+
 const Project = require("../db/project.model");
 const Curriculum = require("../db/curriculum.model");
 

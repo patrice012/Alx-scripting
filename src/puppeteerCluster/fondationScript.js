@@ -23,7 +23,7 @@ const foundationCurriculumScraping = async (cluster, page) => {
   };
 
   const serverRes = await postRequest("/api/v1/curriculum", reqData);
-  console.log(serverRes, "serverRes");
+  console.log("Curiiculum data posted to server");
 
   cluster.task(async ({ page, data: url }) => {
     try {

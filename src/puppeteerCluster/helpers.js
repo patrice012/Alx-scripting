@@ -14,7 +14,7 @@ const getCurriculumnTypes = async (page) => {
     'ul[aria-labelledby="student-switch-curriculum-dropdown"] li'
   );
 
-  console.log(curriculumDropdownItems, "curriculumDropdownItems");
+  // console.log(curriculumDropdownItems, "curriculumDropdownItems");
   return curriculumDropdownItems;
 };
 
@@ -28,6 +28,7 @@ const getSpecialisationsLinks = async (page) => {
     'a[data-target="#period_scores_modal_17"]'
   );
   await specialisationModalBox.click();
+  console.log("specialisationModalBox clicked");
   // get specialisation links
   const data = await page.$$eval('table[class="table"]', (table) => {
     let specialisationTable = table[0];
@@ -49,6 +50,7 @@ const getFoundationLinks = async (page) => {
     'a[data-target="#period_scores_modal_1"]'
   );
   await fondationModalBox.click();
+  console.log("fondationModalBox clicked");
 
   // get fondation links
   const data = await page.$$eval('table[class="table"]', (table) => {

@@ -11,7 +11,7 @@ const foundationScrapingHelper = async () => {
   try {
     const newCookies = await scrapData(foundationCurriculumScraping);
     const data = await getProjectsMetadata("Foundation");
-    console.log(data, "data");
+    // console.log(data, "data");
     const cluster = await newCluster();
 
     if (data) {
@@ -88,14 +88,13 @@ const specialisationScrapingHelper = async () => {
   }
 };
 
-
 const scrapingResourcesHelper = async () => {
   try {
-    console.log("scrapingResourcesHelper");
+    // console.log("Adding resources scraping helper");
 
     const cluster = await newCluster();
     const resData = await getResoursesMetadata({ projectType: "ALX" });
-    console.log(resData, "resData");
+    // console.log(resData, "resData");
     if (resData) {
       for (let items of resData) {
         cluster.task(async ({ page, data: url }) => {

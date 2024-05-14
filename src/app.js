@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const morgan = require("morgan");
 
 const router = require("./routes");
 const {
@@ -13,8 +14,8 @@ const {
   scrapingSpecialisationResources,
   scrapingResources,
 } = require("./puppeteerCluster/job");
+
 const runTestScript = require("./puppeteerCluster/testJob");
-const morgan = require("morgan");
 
 // // cors
 // let alloweds = {
@@ -52,14 +53,10 @@ const morgan = require("morgan");
 //   next();
 // });
 
-// // body parsing
-// server.use(express.json({ limit: "100mb" }));
-// // parse requests of content-type - application/x-www-form-urlencoded
-// server.use(express.urlencoded({ extended: false }));
-
 // cookies
 server.use(cookieParser());
 
+// body parsing
 // parse application/x-www-form-urlencoded
 server.use(bodyParser.urlencoded({ extended: false }));
 

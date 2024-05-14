@@ -1,6 +1,8 @@
+const { API_URL } = require("../config");
+
 async function postRequest(url, data) {
   try {
-    const response = await fetch(`http://localhost:5000${url}`, {
+    const response = await fetch(`${API_URL}${url}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
