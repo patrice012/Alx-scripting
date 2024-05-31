@@ -29,11 +29,14 @@ const getSpecialisationsLinks = async (page) => {
   );
   await specialisationModalBox.click();
   console.log("specialisationModalBox clicked");
+
   // get specialisation links
   const data = await page.$$eval('table[class="table"]', (table) => {
     let specialisationTable = table[0];
     let links = Array.from(specialisationTable.querySelectorAll("a"));
-    let specialisationLinks = links.map((link) => link.href);
+    let specialisationLinks = links
+      .filter((link) => link.href && link.href.trim() !== "")
+      .map((link) => link.href);
     let names = links.map((link) => link.innerText.trim());
     return { specialisationLinks, names };
   });
@@ -56,7 +59,9 @@ const getFoundationLinks = async (page) => {
   const data = await page.$$eval('table[class="table"]', (table) => {
     let foundationTable = table[1];
     let links = Array.from(foundationTable.querySelectorAll("a"));
-    let foundationLinks = links.map((link) => link.href);
+    let foundationLinks = links
+      .filter((link) => link.href && link.href.trim() !== "")
+      .map((link) => link.href);
     let names = links.map((link) => link.innerText.trim());
     return { foundationLinks, names };
   });

@@ -17,8 +17,13 @@ const resoureSchema = new Schema(
       required: true,
     },
     status: {
-      type: Boolean,
-      default: false,
+      type: String,
+      default: "PENDING",
+      enum: ["PENDING", "ERROR", "SUCCESS", "RETRYING"],
+    },
+    retryTimes: {
+      type: Number,
+      default: 0,
     },
     project: {
       type: String,
@@ -29,6 +34,12 @@ const resoureSchema = new Schema(
       ref: "Project",
     },
     relatedLinks: {
+      type: Array,
+    },
+    errorUrls: {
+      type: Array,
+    },
+    successUrl: {
       type: Array,
     },
   },

@@ -6,6 +6,7 @@ const postRequest = require("../../utils/postReq");
 const foundationCurriculumScraping = async (cluster, page) => {
   await page.goto("https://intranet.alxswe.com/curriculums/1/observe", {
     timeout: 0,
+    waitUntil: "domcontentloaded",
   });
 
   let cookies = await page.cookies();
@@ -41,6 +42,16 @@ const foundationCurriculumScraping = async (cluster, page) => {
     // add project links to queue
     await cluster.queue(link);
   }
+
+  console.log("Curriculum data posted to server");
+  // mark Curriculum as fully scraped
+  const successReqData = {
+    name: "Foundation",
+    target: "success",
+  };
+
+  const reqRes = await postRequest("/api/v1/curriculum/update", successReqData);
+  console.log("Updating curriculumn status");
   return cookies;
 };
 

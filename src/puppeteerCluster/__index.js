@@ -50,7 +50,7 @@ const scrapData = async () => {
 
       if (!state.cookies) {
         // go to login page
-        await page.goto(url, { timeout: 0 });
+        await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
 
         // login
         await loginProcess(page);
@@ -65,7 +65,7 @@ const scrapData = async () => {
         let cookies = state.cookies;
         console.log(cookies, "cookies");
         await page.setCookie(...cookies);
-        await page.goto(url, { timeout: 0 });
+        await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
       }
     } catch (error) {
       state.error = error;
@@ -94,7 +94,7 @@ const scrapData = async () => {
     );
 
     // go back home
-    await page.goto(url, { timeout: 0 });
+    await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
 
     // SESpecialisation
     const SESpecialisation = curriculumDropdownItems[1];
@@ -183,7 +183,7 @@ const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
   await page.setCookie(...cookies);
 
   // navigate to project page
-  await page.goto(url, { timeout: 0 });
+  await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
 
   // format PDF name based on project name
   const pdfName = await getPdfName(page, 'h1[class="gap"]');
@@ -261,7 +261,7 @@ const foundationCurriculumScraping = async (
   // loop throught each type
   await Promise.all([
     SEFoundation.click(),
-    page.waitForNavigation({ waitFor: "networkidle0", timeout: 0 }),
+    page.waitForNavigation({ waitFor: "domcontentloaded", timeout: 0 }),
   ]);
 
   const SEFoundationUrl = "https://intranet.alxswe.com/curriculums/1/observe";
@@ -310,7 +310,7 @@ const specialisationCurriculumScraping = async (
   // loop throught each type
   await Promise.all([
     SESpecialisation.click(),
-    page.waitForNavigation({ waitFor: "networkidle0", timeout: 0 }),
+    page.waitForNavigation({ waitFor: "domcontentloaded", timeout: 0 }),
   ]);
 
   // links scraping

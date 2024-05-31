@@ -3,7 +3,6 @@ const {
   updateProjectSchemaValidator,
   findProjectSchemaValidator,
 } = require("../db/validator");
-
 const Project = require("../db/project.model");
 const Curriculum = require("../db/curriculum.model");
 
@@ -23,42 +22,34 @@ class ProjectController {
         dirName,
         conceptPageName,
       } = req.body;
-      const query = { name: name };
+
+      const query = { name };
       const projectData = {
         name,
         curriculum,
         resources,
-        status: true,
         projectLink,
         conceptPageName,
         dirName,
       };
 
-      const curriculumId = await Curriculum.findOne({
+      const curriculumDoc = await Curriculum.findOne({
         name: curriculum,
-      }).select(["_id"]);
-
-      if (curriculumId) {
-        projectData["curriculumId"] = curriculumId;
+      }).select("_id");
+      if (curriculumDoc) {
+        projectData.curriculumId = curriculumDoc._id;
       }
 
       let project = await Project.findOne(query);
 
       if (!project) {
-        // Project doesn't exist, create a new one
         project = new Project(projectData);
         await project.save();
       } else {
-        // Project exists, update the project
         project = await Project.updateOne(query, projectData);
       }
 
-      // console.log("Project:", project);
-      const data = {
-        payload: project,
-      };
-      res.status(201).json(data);
-
+      res.status(201).json({ payload: project });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -67,11 +58,7 @@ class ProjectController {
   static async getProjects(req, res) {
     try {
       const projects = await Project.find();
-      const data = {
-        payload: projects,
-        count: projects.length,
-      };
-      res.status(200).json(data);
+      res.status(200).json({ payload: projects, count: projects.length });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -83,35 +70,70 @@ class ProjectController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
+
       const project = await Project.findById(req.params.id);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      const data = {
-        payload: project,
-      };
-      res.status(200).json(data);
+      res.status(200).json({ payload: project });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
+
   static async updateProject(req, res) {
     try {
-      const { error } = updateProjectSchemaValidator.validate(req.body);
-      if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+      // Validate the request body
+      // const { error } = updateProjectSchemaValidator.validate(req.body);
+      // if (error) {
+      //   return res.status(400).json({ error: error.details[0].message });
+      // }
+
+      // Extract target, id, and url from the request body
+      const { target, id, url, ...data } = req.body;
+
+      // Initialize updateData with the rest of the request body
+      let updateData = { ...data };
+
+      // Determine the new status and retryTimes based on the target value
+      if (target === "success") {
+        updateData.status = "SUCCESS";
+        if (url) {
+          updateData.$addToSet = { successUrl: url };
+          updateData.$pull = { errorUrls: url };
+          //$addToSet ensures that the URL is added only if it doesn't already exist in the array.
+          //$pull removes the URL from the opposite array if it exists there.
+        }
+      } else if (target === "error") {
+        updateData.status = "ERROR";
+        if (url) {
+          updateData.$addToSet = { errorUrls: url };
+          updateData.$pull = { successUrl: url };
+        }
+      } else if (target === "pending") {
+        updateData.status = "PENDING";
+        updateData.retryTimes = 0;
+      } else if (target === "retrying") {
+        updateData.status = "RETRYING";
+        // Retrieve the current project to get the current retryTimes value
+        const project = await Project.findById(id);
+        if (!project) {
+          return res.status(404).json({ error: "Project not found" });
+        }
+        updateData.retryTimes = project.retryTimes + 1;
       }
-      const project = await Project.findByIdAndUpdate(req.body.id, req.body, {
+
+      // Find the project by ID and update it with the new data
+      const project = await Project.findByIdAndUpdate(id, updateData, {
         new: true,
       });
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      const data = {
-        payload: project,
-      };
-      res.status(200).json(data);
+
+      // Return the updated project data
+      res.status(200).json({ message: "Project updated", payload: project });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -123,14 +145,12 @@ class ProjectController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
+
       const project = await Project.findByIdAndDelete(req.params.id);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      const data = {
-        payload: project,
-      };
-      res.status(200).json(data);
+      res.status(200).json({ payload: project });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -142,14 +162,12 @@ class ProjectController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
+
       const project = await Project.findById(req.params.id);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      const data = {
-        payload: project.resources,
-      };
-      res.status(200).json(data);
+      res.status(200).json({ payload: project.resources });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

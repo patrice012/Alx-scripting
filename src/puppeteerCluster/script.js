@@ -14,11 +14,16 @@ const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
   await page.setCookie(...cookies);
 
   // navigate to project page
-  await page.goto(url, { timeout: 0 });
+  await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
 
   // format PDF name based on project name
-  const pdfName = await getPdfName(page, 'h1[class="gap"]');
+  let pdfName = "";
 
+  if (url.includes("/evaluation_quiz_corrections/")) {
+    pdfName = await getPdfName(page, "article > p");
+  } else {
+    pdfName = await getPdfName(page, 'h1[class="gap"]');
+  }
   // remove unwanted tags
   await removeUnwantedTags(page);
 
@@ -39,32 +44,31 @@ const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
   await createPDF(page, dirPath);
 
   // Scrap all links in the project's concept page
-  /* get all links */
-  await page.waitForSelector('div[class="panel panel-default"]');
-  const links = await page.$$eval(
-    'div[class="panel panel-default"] a',
-    (links) => {
+  let links = [];
+  if (!url.includes("/evaluation_quiz_corrections/")) {
+    await page.waitForSelector('div[class="panel panel-default"]');
+    links = await page.$$eval('div[class="panel panel-default"] a', (links) => {
       let validHrefs = [];
       links.forEach((link) => {
         if (link.href) validHrefs.push(link.href);
       });
       return validHrefs;
-    }
-  );
+    });
 
-  let siteUrl = await page.evaluate(() => window.location.href);
+    let siteUrl = await page.evaluate(() => window.location.href);
 
-  const reqData = {
-    name: pdfName,
-    projectLink: url === siteUrl.trim() ? url : siteUrl.trim(),
-    curriculum: curriculumType,
-    resources: [...links],
-    dirName,
-    conceptPageName: pdfName,
-  };
+    const reqData = {
+      name: pdfName,
+      projectLink: url === siteUrl.trim() ? url : siteUrl.trim(),
+      curriculum: curriculumType,
+      resources: [...links],
+      dirName,
+      conceptPageName: pdfName,
+    };
 
-  const serverRes = await postRequest("/api/v1/project", reqData);
-  // console.log(serverRes, "serverRes");
+    const serverRes = await postRequest("/api/v1/project", reqData);
+    // console.log(serverRes, "serverRes");
+  }
 
   return { dirName, links, conceptPageName: pdfName };
 };
@@ -78,12 +82,12 @@ const scrapingConceptPageResources = async (
   console.log("Scraping resources for: ", url);
   try {
     // navigate to project page
-    await page.goto(url, { timeout: 0 });
+    await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
     // login
     const login = await loginProcess(page);
     if (login) {
       console.log("Logged in");
-      await page.goto(url, { timeout: 0 });
+      await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
     } else {
       console.log("Not logged in, trying again afetr 5 seconds");
 
@@ -97,7 +101,7 @@ const scrapingConceptPageResources = async (
         const login = await loginProcess(page);
         if (login) {
           console.log("Logged in");
-          await page.goto(url, { timeout: 0 });
+          await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
         } else {
           console.log("Not logged in");
           return;

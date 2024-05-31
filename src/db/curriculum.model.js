@@ -10,9 +10,16 @@ const curriculumSchema = new Schema(
     },
 
     status: {
-      type: Boolean,
-      default: false,
+      type: String,
+      default: "PENDING",
+      enum: ["PENDING", "ERROR", "SUCCESS", "RETRYING"],
     },
+
+    retryTimes: {
+      type: Number,
+      default: 0,
+    },
+
     links: {
       type: Array,
       required: true,

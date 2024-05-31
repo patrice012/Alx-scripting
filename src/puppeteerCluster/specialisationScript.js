@@ -6,6 +6,7 @@ const specialisationCurriculumScraping = async (cluster, page) => {
   // loop throught each type
   await page.goto("https://intranet.alxswe.com/curriculums/17/observe", {
     timeout: 0,
+    waitUntil: "domcontentloaded",
   });
 
   let cookies = await page.cookies();
@@ -14,6 +15,7 @@ const specialisationCurriculumScraping = async (cluster, page) => {
 
   // Foundation part - Scrap each project link
   const { specialisationLinks, names } = await getSpecialisationsLinks(page);
+  console.log(specialisationLinks, "specialisation links");
 
   const reqData = {
     name: "Specialisation",
@@ -41,6 +43,16 @@ const specialisationCurriculumScraping = async (cluster, page) => {
     // add project links to queue
     await cluster.queue(link);
   }
+
+  console.log("Curriculum data posted to server");
+  // mark Curriculum as fully scraped
+  const successReqData = {
+    name: "Specialisation",
+    target: "success",
+  };
+
+  const reqRes = await postRequest("/api/v1/curriculum/update", successReqData);
+  console.log("Updating curriculumn status");
   return cookies;
 };
 

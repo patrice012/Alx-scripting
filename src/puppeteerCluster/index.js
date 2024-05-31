@@ -35,7 +35,7 @@ const scrapData = async (cb) => {
 
       if (!state.cookies) {
         // go to login page
-        await page.goto(url, { timeout: 0 });
+        await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
 
         // login
         await loginProcess(page);
@@ -50,7 +50,7 @@ const scrapData = async (cb) => {
         let _cookies = state.cookies;
         // console.log(_cookies, "cookies");
         await page.setCookie(..._cookies);
-        await page.goto(url, { timeout: 0 });
+        await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
         // get cookies
         let cookies = await page.cookies();
         state.cookies = cookies;

@@ -24,14 +24,28 @@ const projectSchema = new Schema(
       type: Array,
       required: true,
     },
+
+    errorUrls: {
+      type: Array,
+    },
+    successUrl: {
+      type: Array,
+    },
+
     projectLink: {
       type: String,
       required: true,
     },
     status: {
-      type: Boolean,
-      default: false,
+      type: String,
+      default: "PENDING",
+      enum: ["PENDING", "ERROR", "SUCCESS", "RETRYING"],
     },
+    retryTimes: {
+      type: Number,
+      default: 0,
+    },
+
     dirName: {
       type: String,
     },

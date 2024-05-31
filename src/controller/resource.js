@@ -32,7 +32,6 @@ class ResourceController {
         type,
         project,
         relatedLinks,
-        status: true,
       };
 
       try {
@@ -92,22 +91,51 @@ class ResourceController {
     }
   }
 
+
   static async updateResource(req, res) {
     try {
-      const { error } = updateResourceSchemaValidator.validate(req.body);
-      if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+      // Extract target, id, and url from the request body
+      const { target, id, url, ...data } = req.body;
+
+      // Initialize updateData with the rest of the request body
+      let updateData = { ...data };
+
+      // Determine the new status and retryTimes based on the target value
+      if (target === "success") {
+        updateData.status = "SUCCESS";
+        if (url) {
+          updateData.$addToSet = { successUrl: url };
+          updateData.$pull = { errorUrls: url };
+        }
+      } else if (target === "error") {
+        updateData.status = "ERROR";
+        if (url) {
+          updateData.$addToSet = { errorUrls: url };
+          updateData.$pull = { successUrl: url };
+        }
+      } else if (target === "pending") {
+        updateData.status = "PENDING";
+        updateData.retryTimes = 0;
+      } else if (target === "retrying") {
+        updateData.status = "RETRYING";
+        // Retrieve the current resource to get the current retryTimes value
+        const resource = await Resource.findById(id);
+        if (!resource) {
+          return res.status(404).json({ error: "Resource not found" });
+        }
+        updateData.retryTimes = resource.retryTimes + 1;
       }
-      const resource = await Resource.findByIdAndUpdate(req.body.id, req.body, {
+
+      // Find the resource by ID and update it with the new data
+      const resource = await Resource.findByIdAndUpdate(id, updateData, {
         new: true,
       });
       if (!resource) {
         return res.status(404).json({ error: "Resource not found" });
       }
-      const data = {
-        payload: resource,
-      };
-      res.status(200).json(data);
+
+      // Return the updated resource data
+      res.status(200).json({ message: "Resource updated", payload: resource });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

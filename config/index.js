@@ -14,7 +14,7 @@ const API_URL = process.env.API_URL;
 
 // browser configuration
 const broswerView = {
-  headless: false, //new,
+  headless: 'new', //new, false
   defaultViewport: null,
   args: ["--start-maximized"],
 };
