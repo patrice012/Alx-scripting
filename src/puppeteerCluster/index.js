@@ -31,7 +31,7 @@ const scrapData = async (cb) => {
 
     // timeout configuration
     await page.setDefaultTimeout(150000); // 2min 30s
-    await page.setDefaultNavigationTimeout(60000); // 1min
+    await page.setDefaultNavigationTimeout(150000);
 
     try {
       state.cookies = loadCookies();

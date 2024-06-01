@@ -26,14 +26,12 @@ class ResourceController {
       const { name, link, type, project, relatedLinks } = req.body;
 
       const query = { name: name };
-      const status = !!relatedLinks.length ? "PENDING" : "SUCCESS";
       const resourceData = {
         name,
         link,
         type,
         project,
         relatedLinks,
-        status,
       };
 
       try {
@@ -101,6 +99,12 @@ class ResourceController {
       // Initialize updateData with the rest of the request body
       let updateData = { ...data };
 
+      // Retrieve the current resource to get the current retryTimes value
+      const aResource = await Resource.findById(id);
+      if (!aResource) {
+        return res.status(404).json({ error: "Resource not found" });
+      }
+
       // Determine the new status and retryTimes based on the target value
       if (target === "success") {
         updateData.status = "SUCCESS";
@@ -114,17 +118,13 @@ class ResourceController {
           updateData.$addToSet = { errorUrls: url };
           updateData.$pull = { successUrl: url };
         }
+        updateData.retryTimes = aResource.retryTimes + 1;
       } else if (target === "pending") {
         updateData.status = "PENDING";
         updateData.retryTimes = 0;
       } else if (target === "retrying") {
         updateData.status = "RETRYING";
-        // Retrieve the current resource to get the current retryTimes value
-        const resource = await Resource.findById(id);
-        if (!resource) {
-          return res.status(404).json({ error: "Resource not found" });
-        }
-        updateData.retryTimes = resource.retryTimes + 1;
+        updateData.retryTimes = aResource.retryTimes + 1;
       }
 
       // Find the resource by ID and update it with the new data

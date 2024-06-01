@@ -24,7 +24,6 @@ class ProjectController {
       } = req.body;
 
       const query = { name };
-      const status = !!projectLink.length ? "PENDING" : "SUCCESS";
       const projectData = {
         name,
         curriculum,
@@ -32,7 +31,6 @@ class ProjectController {
         projectLink,
         conceptPageName,
         dirName,
-        status,
       };
 
       const curriculumDoc = await Curriculum.findOne({
@@ -97,6 +95,12 @@ class ProjectController {
       // Initialize updateData with the rest of the request body
       let updateData = { ...data };
 
+      // Retrieve the current project to get the current retryTimes value
+      const aProject = await Project.findById(id);
+      if (!aProject) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
       // Determine the new status and retryTimes based on the target value
       if (target === "success") {
         updateData.status = "SUCCESS";
@@ -112,17 +116,13 @@ class ProjectController {
           updateData.$addToSet = { errorUrls: url };
           updateData.$pull = { successUrl: url };
         }
+        updateData.retryTimes = aProject.retryTimes + 1;
       } else if (target === "pending") {
         updateData.status = "PENDING";
         updateData.retryTimes = 0;
       } else if (target === "retrying") {
         updateData.status = "RETRYING";
-        // Retrieve the current project to get the current retryTimes value
-        const project = await Project.findById(id);
-        if (!project) {
-          return res.status(404).json({ error: "Project not found" });
-        }
-        updateData.retryTimes = project.retryTimes + 1;
+        updateData.retryTimes = aProject.retryTimes + 1;
       }
 
       // Find the project by ID and update it with the new data

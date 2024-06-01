@@ -5,7 +5,7 @@ const postRequest = require("../../utils/postReq");
 const specialisationCurriculumScraping = async (cluster, page) => {
   // timeout configuration
   await page.setDefaultTimeout(150000); // 2min 30s
-  await page.setDefaultNavigationTimeout(60000); // 1min
+  await page.setDefaultNavigationTimeout(150000);
 
   // loop throught each type
   await page.goto("https://intranet.alxswe.com/curriculums/17/observe", {
@@ -31,7 +31,7 @@ const specialisationCurriculumScraping = async (cluster, page) => {
   cluster.task(async ({ page, data: url }) => {
     // timeout configuration
     await page.setDefaultTimeout(150000); // 2min 30s
-    await page.setDefaultNavigationTimeout(60000); // 1min
+    await page.setDefaultNavigationTimeout(150000);
 
     try {
       const COOKIES = cookies;

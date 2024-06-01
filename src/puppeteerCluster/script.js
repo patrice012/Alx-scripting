@@ -191,8 +191,10 @@ const scrapingConceptPageResources = async (
   let pdfPath = `${dirName}/${pdfName}`;
 
   if (url.includes("https://www.youtube.com/")) {
-    console.log("Youtube video, wait 20s for load");
-    await sleep(20000);
+    console.log("Youtube video, wait for #channel-name to load");
+    await page.waitForSelector("#channel-name", {
+      visible: true,
+    });
   }
   await createPDF(page, pdfPath);
 

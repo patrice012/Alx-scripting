@@ -45,4 +45,14 @@ const resoureSchema = new Schema(
   },
   { timestamps: true }
 );
+
+resoureSchema.pre("save", function (next) {
+  if (this.relatedLinks.length === 0) {
+    this.status = "SUCCESS";
+  } else {
+    this.status = "PENDING";
+  }
+  next();
+});
+
 module.exports = mongoose.model("Resource", resoureSchema);

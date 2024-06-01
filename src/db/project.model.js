@@ -56,6 +56,15 @@ const projectSchema = new Schema(
   { timestamps: true }
 );
 
+projectSchema.pre("save", function (next) {
+  if (this.resources.length === 0) {
+    this.status = "SUCCESS";
+  } else {
+    this.status = "PENDING";
+  }
+  next();
+});
+
 // add index on curriculum field
 projectSchema.index({ curriculum: 1, name: 1 });
 

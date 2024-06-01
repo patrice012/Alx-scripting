@@ -28,4 +28,13 @@ const curriculumSchema = new Schema(
   { timestamps: true }
 );
 
+curriculumSchema.pre("save", function (next) {
+  if (this.links.length === 0) {
+    this.status = "SUCCESS";
+  } else {
+    this.status = "PENDING";
+  }
+  next();
+});
+
 module.exports = mongoose.model("Curriculum", curriculumSchema);
