@@ -13,10 +13,10 @@ class CurriculumController {
 
     try {
       let curriculum = await Curriculum.findOne({ name });
-
+      const status = !!links.length ? "PENDING" : "SUCCESS";
       if (!curriculum) {
         // Curriculum doesn't exist, create a new one
-        curriculum = new Curriculum({ name, links });
+        curriculum = new Curriculum({ name, links, status: status });
         await curriculum.save();
       } else {
         // Ensure `links` is an array and merge without duplicates

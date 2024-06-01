@@ -26,12 +26,14 @@ class ResourceController {
       const { name, link, type, project, relatedLinks } = req.body;
 
       const query = { name: name };
+      const status = !!relatedLinks.length ? "PENDING" : "SUCCESS";
       const resourceData = {
         name,
         link,
         type,
         project,
         relatedLinks,
+        status,
       };
 
       try {
@@ -90,7 +92,6 @@ class ResourceController {
       res.status(500).json({ error: error.message });
     }
   }
-
 
   static async updateResource(req, res) {
     try {

@@ -24,6 +24,7 @@ class ProjectController {
       } = req.body;
 
       const query = { name };
+      const status = !!projectLink.length ? "PENDING" : "SUCCESS";
       const projectData = {
         name,
         curriculum,
@@ -31,6 +32,7 @@ class ProjectController {
         projectLink,
         conceptPageName,
         dirName,
+        status,
       };
 
       const curriculumDoc = await Curriculum.findOne({
@@ -80,7 +82,6 @@ class ProjectController {
       res.status(500).json({ error: error.message });
     }
   }
-
 
   static async updateProject(req, res) {
     try {
