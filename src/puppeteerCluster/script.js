@@ -10,69 +10,77 @@ const { PDF_ROUTE } = require("../../config");
 
 // scraping project's concept page
 const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
-  // set pages cookies
-  await page.setCookie(...cookies);
-
-  // navigate to project page
-  await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
-
-  // format PDF name based on project name
-  let pdfName = "";
-
-  if (url.includes("/evaluation_quiz_corrections/")) {
-    pdfName = await getPdfName(page, "article > p");
-  } else {
-    pdfName = await getPdfName(page, 'h1[class="gap"]');
-  }
-  // remove unwanted tags
-  await removeUnwantedTags(page);
-
-  /* create directory for the project */
-  let dirName = `${PDF_ROUTE}/${curriculumType}/Project-${pdfName.trim()}-dir`;
-  await createDir(dirName);
-
   try {
-    // remove unwanted tags
+    // Set page cookies
+    await page.setCookie(...cookies);
+
+    // Navigate to project page
+    await page.goto(url, { waitUntil: "load" });
+
+    // Format PDF name based on project name
+    let pdfName;
+    if (url.includes("/evaluation_quiz_corrections/")) {
+      pdfName = await getPdfName(page, "article > p");
+    } else {
+      pdfName = await getPdfName(page, 'h1[class="gap"]');
+    }
+
+    // Remove unwanted tags
     await removeUnwantedTags(page);
+
+    // Create directory for the project
+    const dirName = `${PDF_ROUTE}/${curriculumType}/Project-${pdfName.trim()}-dir`;
+    await createDir(dirName);
+
+    try {
+      // Remove unwanted tags
+      await removeUnwantedTags(page);
+    } catch (error) {
+      console.log("Error removing unwanted tags:", error);
+    }
+
+    // Create PDF path
+    const pdfPath = `${dirName}/${pdfName}`;
+    await createPDF(page, pdfPath);
+
+    // Scrape all links in the project's concept page
+    let links = [];
+    if (!url.includes("/evaluation_quiz_corrections/")) {
+      await page.waitForSelector('div[class="panel panel-default"]');
+      links = await page.$$eval(
+        'div[class="panel panel-default"] a',
+        (links) => {
+          return links.map((link) => link.href).filter((href) => href);
+        }
+      );
+
+      const siteUrl = await page.evaluate(() => window.location.href);
+
+      const reqData = {
+        name: pdfName,
+        projectLink: url === siteUrl.trim() ? url : siteUrl.trim(),
+        curriculum: curriculumType,
+        resources: [...links],
+        dirName,
+        conceptPageName: pdfName,
+      };
+
+      try {
+        const serverRes = await postRequest("/api/v1/project", reqData);
+        console.log("Project data posted to server:", serverRes);
+      } catch (error) {
+        console.log("Error posting project data to server:", error);
+      }
+    }
+
+    return { dirName, links, conceptPageName: pdfName };
   } catch (error) {
-    console.log(error, "error");
+    console.log("Error in scraping concept page:", error);
+    return { dirName: null, links: [], conceptPageName: "" };
   }
-
-  // create pdf name
-  await createDir(dirName);
-  let dirPath = `${dirName}/${pdfName}`;
-  await createPDF(page, dirPath);
-
-  // Scrap all links in the project's concept page
-  let links = [];
-  if (!url.includes("/evaluation_quiz_corrections/")) {
-    await page.waitForSelector('div[class="panel panel-default"]');
-    links = await page.$$eval('div[class="panel panel-default"] a', (links) => {
-      let validHrefs = [];
-      links.forEach((link) => {
-        if (link.href) validHrefs.push(link.href);
-      });
-      return validHrefs;
-    });
-
-    let siteUrl = await page.evaluate(() => window.location.href);
-
-    const reqData = {
-      name: pdfName,
-      projectLink: url === siteUrl.trim() ? url : siteUrl.trim(),
-      curriculum: curriculumType,
-      resources: [...links],
-      dirName,
-      conceptPageName: pdfName,
-    };
-
-    const serverRes = await postRequest("/api/v1/project", reqData);
-    // console.log(serverRes, "serverRes");
-  }
-
-  return { dirName, links, conceptPageName: pdfName };
 };
 
+// scraping resources  page
 const scrapingConceptPageResources = async (
   page,
   url,
@@ -80,42 +88,55 @@ const scrapingConceptPageResources = async (
   conceptPageName
 ) => {
   console.log("Scraping resources for: ", url);
-  try {
-    // navigate to project page
-    await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
-    // login
-    const login = await loginProcess(page);
-    if (login) {
-      console.log("Logged in");
-      await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
-    } else {
-      console.log("Not logged in, trying again afetr 5 seconds");
 
-      await sleep(5000);
-      let siteUrl = await page.evaluate(() => window.location.href);
+  const loginAndNavigate = async () => {
+    try {
+      await page.goto(url, { waitUntil: "load" });
+      const login = await loginProcess(page);
 
-      if (siteUrl.includes("https://intranet.alxswe.com/auth/sign_in")) {
-        console.log("Login required for url: ", url);
-        console.log("Trying to login again");
+      if (login) {
+        console.log("Logged in");
+        await page.goto(url, { waitUntil: "load" });
+        return true;
+      } else {
+        console.log("Not logged in, trying again after 3 seconds");
 
-        const login = await loginProcess(page);
-        if (login) {
-          console.log("Logged in");
-          await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
-        } else {
-          console.log("Not logged in");
-          return;
+        await sleep(3000);
+
+        let siteUrl = await page.evaluate(() => window.location.href);
+        if (siteUrl.includes("https://intranet.alxswe.com/auth/sign_in")) {
+          console.log("Trying to login again");
+          await page.reload({ waitUntil: "networkidle0" });
+          const loginRetry = await loginProcess(page);
+
+          if (loginRetry) {
+            console.log("Logged in");
+            await page.goto(url, { waitUntil: "load" });
+            return true;
+          }
         }
       }
+    } catch (error) {
+      console.log(error, "error during login and navigation");
+      return false;
     }
-  } catch (error) {
-    console.log(error, "error");
+    return false;
+  };
+
+  if (url.includes("https://intranet.alxswe.com")) {
+    const loginSuccess = await loginAndNavigate();
+    let siteUrl = await page.evaluate(() => window.location.href);
+    if (
+      !loginSuccess &&
+      siteUrl.includes("https://intranet.alxswe.com/auth/sign_in")
+    ) {
+      return;
+    }
   }
 
-  // format PDF name based on project name
   let links = [];
-  let mediaUrls = [];
   let pdfName = "";
+
   if (url.includes("https://intranet.alxswe.com/concepts")) {
     const target = 'h1[class="d-flex flex-column gap-2"] > span';
     pdfName = await getPdfName(page, target);
@@ -123,14 +144,9 @@ const scrapingConceptPageResources = async (
     await removeUnwantedTags(page);
 
     links = await page.$$eval("#curriculum_navigation_content a", (links) => {
-      let validHrefs = [];
-      links.forEach((link) => {
-        if (link.href) validHrefs.push(link.href);
-      });
-      return validHrefs;
+      return links.map((link) => link.href).filter((href) => href);
     });
   } else {
-    /* Use the document title as pdf name */
     pdfName = await page.evaluate(() => {
       let name = document.title
         .trim()
@@ -140,7 +156,7 @@ const scrapingConceptPageResources = async (
         .slice(0, 8)
         .join("-")
         .replace(/[\\'.,\/\s]+/g, "-");
-      if (!name.length >= 1) {
+      if (!name.length) {
         name = "default-name";
       }
       return name + ".pdf";
@@ -148,22 +164,19 @@ const scrapingConceptPageResources = async (
   }
 
   try {
-    // /* create directory for the project */
     await createDir(dirName);
   } catch (error) {
-    console.log(error, "error");
+    console.log(error, "error creating directory");
   }
 
   try {
-    // remove unwanted tags
     await removeUnwantedTags(page);
   } catch (error) {
-    console.log(error, "error");
+    console.log(error, "error removing unwanted tags");
   }
 
   let siteUrl = await page.evaluate(() => window.location.href);
 
-  /* Check if it's an amazon assets */
   if (siteUrl.includes("amazon.com")) {
     console.log("Amazon assets, skipping pdf creation");
     return;
@@ -177,6 +190,10 @@ const scrapingConceptPageResources = async (
 
   let pdfPath = `${dirName}/${pdfName}`;
 
+  if (url.includes("https://www.youtube.com/")) {
+    console.log("Youtube video, wait 20s for load");
+    await sleep(20000);
+  }
   await createPDF(page, pdfPath);
 
   const reqData = {
@@ -189,7 +206,12 @@ const scrapingConceptPageResources = async (
     relatedLinks: [...links],
   };
 
-  const serverRes = await postRequest("/api/v1/resource", reqData);
+  try {
+    const serverRes = await postRequest("/api/v1/resource", reqData);
+    console.log("Resource data posted to server");
+  } catch (error) {
+    console.log("Error posting resource data to server:", error);
+  }
 };
 
 module.exports = {

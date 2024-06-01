@@ -2,7 +2,10 @@ const { Cluster } = require("puppeteer-cluster");
 const debug = require("../../utils/debug");
 const { broswerView } = require("../../config");
 
-const newCluster = async (maxConcurrency = 4, mode = "CONCURRENCY_CONTEXT") => {
+const newCluster = async ({
+  maxConcurrency = 4,
+  mode = "CONCURRENCY_CONTEXT",
+} = {}) => {
   const cluster = await Cluster.launch({
     concurrency:
       mode === "CONCURRENCY_CONTEXT"

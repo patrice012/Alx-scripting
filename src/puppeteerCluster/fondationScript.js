@@ -4,9 +4,12 @@ const postRequest = require("../../utils/postReq");
 
 // utils
 const foundationCurriculumScraping = async (cluster, page) => {
+  // timeout configuration
+  await page.setDefaultTimeout(150000); // 2min 30s
+  await page.setDefaultNavigationTimeout(60000); // 1min
+
   await page.goto("https://intranet.alxswe.com/curriculums/1/observe", {
-    timeout: 0,
-    waitUntil: "domcontentloaded",
+    waitUntil: "load",
   });
 
   let cookies = await page.cookies();
@@ -25,6 +28,10 @@ const foundationCurriculumScraping = async (cluster, page) => {
   console.log("Curriculum data posted to server");
 
   cluster.task(async ({ page, data: url }) => {
+    // timeout configuration
+    await page.setDefaultTimeout(150000); // 2min 30s
+    await page.setDefaultNavigationTimeout(60000); // 1min
+
     try {
       const COOKIES = cookies;
       await scrapingConceptPage(page, url, COOKIES, "Foundation");

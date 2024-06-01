@@ -28,6 +28,11 @@ const scrapData = async (cb) => {
   // Visiting the home page and login if needed
   await cluster.queue(async ({ page }) => {
     const url = new URL(BASE_URL);
+
+    // timeout configuration
+    await page.setDefaultTimeout(150000); // 2min 30s
+    await page.setDefaultNavigationTimeout(60000); // 1min
+
     try {
       state.cookies = loadCookies();
 
@@ -35,7 +40,7 @@ const scrapData = async (cb) => {
 
       if (!state.cookies) {
         // go to login page
-        await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
+        await page.goto(url, { waitUntil: "load" });
 
         // login
         await loginProcess(page);
@@ -50,7 +55,7 @@ const scrapData = async (cb) => {
         let _cookies = state.cookies;
         // console.log(_cookies, "cookies");
         await page.setCookie(..._cookies);
-        await page.goto(url, { timeout: 0, waitUntil: "domcontentloaded" });
+        await page.goto(url, { waitUntil: "load" });
         // get cookies
         let cookies = await page.cookies();
         state.cookies = cookies;
@@ -73,6 +78,7 @@ const scrapData = async (cb) => {
 
     newCookies = await cb(cluster, page);
   });
+
   await cluster.idle();
   await cluster.close();
   return newCookies;
