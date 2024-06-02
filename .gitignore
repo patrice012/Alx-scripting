@@ -8,7 +8,7 @@ dist
 
 build
 
-cookies.*
+cookies.json
 test.js
 
 # Dependency directories
@@ -41,6 +41,5 @@ lerna-debug.log*
 
 tmp
 pdf
-pdf-1
 pdf-*
 *.png
