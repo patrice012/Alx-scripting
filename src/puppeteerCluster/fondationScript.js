@@ -1,6 +1,6 @@
 const { getFoundationLinks } = require("./helpers");
 const { scrapingConceptPage } = require("./script");
-const postRequest = require("../../utils/postReq");
+const postRequest = require("../utils/postReq");
 
 // utils
 const foundationCurriculumScraping = async (cluster, page) => {

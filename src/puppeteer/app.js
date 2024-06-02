@@ -1,13 +1,13 @@
 // env variable
-const { BASE_URL, broswerView } = require("../../config");
+const { BASE_URL, broswerView } = require("../config");
 // puppeteer
 const puppeteer = require("puppeteer");
 // helper functions
 const processLinksSequentially = require("./processLinks");
 const loginProcess = require("../auth/auth");
 // utils
-const { _format } = require("../../utils/formatPDFName");
-const { loadCookies, saveCookies } = require("../../utils/cookies");
+const { _format } = require("../utils/formatPDFName");
+const { loadCookies, saveCookies } = require("../utils/cookies");
 
 const startJob = async () => {
   const browser = await puppeteer.launch(broswerView);
@@ -43,14 +43,12 @@ const startJob = async () => {
   const modalBox = await page.$('a[data-target="#period_scores_modal_1"]');
   await modalBox.click();
 
-
   // get fondation links
   const links = await page.$$eval('table[class="table"]', (table) => {
     let foundationTable = table[1];
     let links = Array.from(foundationTable.querySelectorAll("a"));
     return links.map((link) => link.href);
   });
-
 
   try {
     /* expose custom function in DOM */

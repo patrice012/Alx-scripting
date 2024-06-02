@@ -1,12 +1,12 @@
-const createPDF = require("../../utils/createPDF");
-const { createDir, writeToFile } = require("../../utils/files");
-const removeUnwantedTags = require("../../utils/removeTags");
-const { getPdfName } = require("../../utils/formatPDFName");
-const postRequest = require("../../utils/postReq");
+const createPDF = require("../utils/createPDF");
+const { createDir, writeToFile } = require("../utils/files");
+const removeUnwantedTags = require("../utils/removeTags");
+const { getPdfName } = require("../utils/formatPDFName");
+const postRequest = require("../utils/postReq");
 const loginProcess = require("../auth/auth");
-const { sleep } = require("../../utils/sleep");
+const { sleep } = require("../utils/sleep");
 
-const { PDF_ROUTE } = require("../../config");
+const { PDF_ROUTE } = require("../config");
 
 // scraping project's concept page
 const scrapingConceptPage = async (page, url, cookies, curriculumType) => {

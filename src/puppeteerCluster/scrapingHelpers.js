@@ -5,8 +5,8 @@ const getProjectsMetadata = require("./getProjectLinks");
 const getResoursesMetadata = require("./getResourcesLinks");
 const { scrapingConceptPageResources } = require("./script");
 const newCluster = require("./newCluster");
-const { PDF_ROUTE } = require("../../config");
-const postRequest = require("../../utils/postReq");
+const { PDF_ROUTE } = require("../config");
+const postRequest = require("../utils/postReq");
 
 const foundationScrapingHelper = async () => {
   try {

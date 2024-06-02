@@ -1,7 +1,7 @@
 const loginProcess = require("../auth/auth");
-const createPDF = require("../../utils/createPDF");
-const removeUnwantedTags = require("../../utils/removeTags");
-const { getPdfName } = require("../../utils/formatPDFName");
+const createPDF = require("../utils/createPDF");
+const removeUnwantedTags = require("../utils/removeTags");
+const { getPdfName } = require("../utils/formatPDFName");
 
 async function openConceptLinks(projectPage, browser, dirName) {
   /* get all links */

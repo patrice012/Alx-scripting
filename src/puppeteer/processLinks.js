@@ -1,11 +1,11 @@
 // handles concept links
 const openConceptLinks = require("./conceptLinks");
 //utils
-const createPDF = require("../../utils/createPDF");
-const { createDir } = require("../../utils/files");
-const removeUnwantedTags = require("../../utils/removeTags");
-const { getPdfName } = require("../../utils/formatPDFName");
-const { loadCookies } = require("../../utils/cookies");
+const createPDF = require("../utils/createPDF");
+const { createDir } = require("../utils/files");
+const removeUnwantedTags = require("../utils/removeTags");
+const { getPdfName } = require("../utils/formatPDFName");
+const { loadCookies } = require("../utils/cookies");
 
 async function processLinksSequentially(links, browser, typeCur) {
   for (const link of links) {
