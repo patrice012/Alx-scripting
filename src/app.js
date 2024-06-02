@@ -1,5 +1,5 @@
 const express = require("express");
-const server = express();
+const app = express();
 
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -21,7 +21,7 @@ const runTestScript = require("./puppeteerCluster/testJob");
 // let alloweds = {
 //   origin: [process.env.DOMAIN, process.env.PUBLINK, process.env.PUBLINKLIVE],
 // };
-// server.use(
+// app.use(
 //   cors({
 //     origin: (origin, callback) => {
 //       // Check if the origin is allowed
@@ -38,7 +38,7 @@ const runTestScript = require("./puppeteerCluster/testJob");
 // );
 
 // // set headers globally
-// server.use((req, res, next) => {
+// app.use((req, res, next) => {
 //   // const origin =
 //   //   alloweds?.origin?.includes(req.header("origin")?.toLowerCase()) &&
 //   //   req.headers.origin;
@@ -54,43 +54,70 @@ const runTestScript = require("./puppeteerCluster/testJob");
 // });
 
 // cookies
-server.use(cookieParser());
+app.use(cookieParser());
 
 // body parsing
 // parse application/x-www-form-urlencoded
-server.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse application/json
-server.use(bodyParser.json());
+app.use(bodyParser.json());
 
 // morgan
-server.use(morgan("dev"));
+app.use(morgan("dev"));
 
-server.use("/api/v1", router);
+app.use("/api/v1", router);
 
 // default route
-server.get("/", (req, res) => {
-  res.status(200).send("Server up");
+app.get("/", (req, res) => {
+  res.status(200).send("app up");
 });
 
-server.get("/foundation-job", scrapingFoundationResources);
+app.get("/foundation-job", scrapingFoundationResources);
 
-server.get("/specialisation-job", scrapingSpecialisationResources);
+app.get("/specialisation-job", scrapingSpecialisationResources);
 
-server.get("/resources-job", scrapingResources);
+app.get("/resources-job", scrapingResources);
 
-server.get("/test-job", runTestScript);
+app.get("/test-job", runTestScript);
 
-server.listen(process.env.PORT, () =>
-  console.log(`app listen on port ${process.env.PORT}`)
-);
+// Export the app app for testing
+module.exports = app;
 
-// connect mongoose
-mongoose.set("strictQuery", false);
-mongoose.connect(process.env.DB_URI, (err) => {
-  if (err) {
-    console.log(err, "mongoose db connection error");
-  } else {
-    console.log("connected to db");
+let server;
+
+const startServer = () => {
+  const PORT = process.env.PORT || 5000;
+  server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
+
+const stopServer = () => {
+  if (server) {
+    server.close();
   }
-});
+};
+
+const connectToDB = () => {
+  mongoose.set("strictQuery", false);
+  mongoose.connect(process.env.DB_URI, (err) => {
+    if (err) {
+      console.log(err, "mongoose db connection error");
+    } else {
+      console.log("connected to db");
+    }
+  });
+};
+
+const disconnectDB = () => {
+  mongoose.connection.close();
+};
+
+module.exports = { app, startServer, stopServer };
+
+// Start the server only if this file is run directly
+if (require.main === module) {
+  startServer();
+  connectToDB();
+}

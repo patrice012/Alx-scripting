@@ -1,8 +1,8 @@
 // env variable
-const { EMAIL, PASSWORD } = require("../../config");
+const { EMAIL, PASSWORD } = require("../config");
 
 //utils
-const { sleep } = require("../../utils/sleep");
+const { sleep } = require("../utils/sleep");
 
 // type effect delay
 const delay = { delay: 200 };

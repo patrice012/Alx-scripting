@@ -1,13 +1,13 @@
 const newCluster = require("./newCluster");
 
 // base config
-const { BASE_URL } = require("../../config");
+const { BASE_URL } = require("../config");
 
 // auth
 const loginProcess = require("../auth/auth");
 
 // utils
-const { loadCookies, saveCookies } = require("../../utils/cookies");
+const { loadCookies, saveCookies } = require("../utils/cookies");
 
 const scrapData = async (cb) => {
   const cluster = await newCluster();

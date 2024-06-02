@@ -4,6 +4,10 @@ build/Release
 //test copilot ✊
 .copilotignore
 
+dist
+
+build
+
 cookies.*
 test.js
 

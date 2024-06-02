@@ -1,6 +1,6 @@
 const { getSpecialisationsLinks } = require("./helpers");
 const { scrapingConceptPage } = require("./script");
-const postRequest = require("../../utils/postReq");
+const postRequest = require("../utils/postReq");
 
 const specialisationCurriculumScraping = async (cluster, page) => {
   // timeout configuration
