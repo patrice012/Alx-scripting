@@ -11,16 +11,15 @@ const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
 const API_URL = process.env.API_URL;
 
-
 // browser configuration
 const broswerView = {
-  headless: 'new', //new, false
+  headless: "new", //new, false
   defaultViewport: null,
   args: ["--start-maximized"],
 };
 
 // pdf route folder
-const PDF_ROUTE='pdf'
+const PDF_ROUTE = "pdf";
 
 // process file path
 let normalizePath = path.normalize(_filePath);

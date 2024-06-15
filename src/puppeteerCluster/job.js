@@ -2,6 +2,7 @@ const {
   foundationScrapingHelper,
   specialisationScrapingHelper,
   scrapingResourcesHelper,
+  scrapingConceptsHelper,
 } = require("./scrapingHelpers");
 
 const scrapingFoundationResources = async (req, res) => {
@@ -36,8 +37,19 @@ const scrapingResources = async (req, res) => {
   }
 };
 
+const scrapingConcepts = async (req, res) => {
+  try {
+    res.status(200).json({ message: "Scraping additionals concepts start" });
+    await scrapingConceptsHelper();
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Scraping resources failed" });
+  }
+};
+
 module.exports = {
   scrapingFoundationResources,
   scrapingSpecialisationResources,
   scrapingResources,
+  scrapingConcepts,
 };

@@ -1,16 +1,22 @@
 const { scrapData } = require("./index");
 const foundationCurriculumScraping = require("./fondationScript");
 const specialisationCurriculumScraping = require("./specialisationScript");
+const conceptPageScraping = require("./conceptPageScript");
 const getProjectsMetadata = require("./getProjectLinks");
 const getResoursesMetadata = require("./getResourcesLinks");
+const getConceptsMetadata = require("./getConceptsLinks");
+const getConceptLinks = require("./getConceptsLinks");
 const { scrapingConceptPageResources } = require("./script");
 const newCluster = require("./newCluster");
 const { PDF_ROUTE } = require("../config");
 const postRequest = require("../utils/postReq");
+const { sleep } = require("../utils/sleep");
 
 const foundationScrapingHelper = async () => {
   try {
-    const newCookies = await scrapData(foundationCurriculumScraping);
+    // const newCookies = await scrapData(foundationCurriculumScraping);
+    // await sleep(5000);
+
     let data = await getProjectsMetadata("Foundation");
 
     const helper = async (data, newCookies = {}) => {
@@ -19,8 +25,10 @@ const foundationScrapingHelper = async () => {
 
         for (let project of data) {
           try {
-            if (project.retryTimes > 4) {
-              console.log(`--> Skip project ${project.name}, retry limit hits`);
+            if (project.retryTimes > 5) {
+              console.log(
+                `--> Skip project ${project.conceptPageName}, retry limit hits`
+              );
               continue;
             }
 
@@ -103,7 +111,7 @@ const foundationScrapingHelper = async () => {
     };
 
     while (data.length) {
-      await helper(data, newCookies);
+      await helper(data);
 
       console.log("Redoing the same task");
       data = await getProjectsMetadata("Foundation");
@@ -116,7 +124,9 @@ const foundationScrapingHelper = async () => {
 
 const specialisationScrapingHelper = async () => {
   try {
-    const newCookies = await scrapData(specialisationCurriculumScraping);
+    // const newCookies = await scrapData(specialisationCurriculumScraping);
+    // await sleep(5000);
+
     let data = await getProjectsMetadata("Specialisation");
 
     const helper = async (data, newCookies = {}) => {
@@ -125,8 +135,10 @@ const specialisationScrapingHelper = async () => {
 
         for (let project of data) {
           try {
-            if (project.retryTimes > 4) {
-              console.log(`--> Skip project ${project.name}, retry limit hits`);
+            if (project.retryTimes > 5) {
+              console.log(
+                `--> Skip project ${project.conceptPageName}, retry limit hits`
+              );
               continue;
             }
 
@@ -209,10 +221,10 @@ const specialisationScrapingHelper = async () => {
     };
 
     while (data.length) {
-      await helper(data, newCookies);
+      await helper(data);
 
       console.log("Redoing the same task");
-      data = await getProjectsMetadata("Foundation");
+      data = await getProjectsMetadata("Specialisation");
     }
   } catch (error) {
     console.log("--> Error in specialisationScrapingHelper:", error);
@@ -224,6 +236,7 @@ const scrapingResourcesHelper = async () => {
   try {
     let resData = await getResoursesMetadata({ projectType: "ALX" });
 
+    // console.log(resData, 'data')
     const helper = async (resData) => {
       if (!!resData.length) {
         const cluster = await newCluster({ maxConcurrency: 6 });
@@ -245,10 +258,11 @@ const scrapingResourcesHelper = async () => {
               await page.setDefaultNavigationTimeout(150000);
 
               try {
+                const id = Math.floor(Math.random() * 101);
                 await scrapingConceptPageResources(
                   page,
                   url,
-                  `${PDF_ROUTE}/resources/${items.project}`,
+                  `${PDF_ROUTE}/resources/${items.project}-${id}`,
                   items.project
                 );
 
@@ -319,8 +333,23 @@ const scrapingResourcesHelper = async () => {
   }
 };
 
+const scrapingConceptsHelper = async () => {
+  try {
+    const cluster = await scrapData(conceptPageScraping);
+
+    await sleep(500);
+    
+    await cluster.idle();
+    await cluster.close();
+  } catch (error) {
+    console.log("--> Error in scrapingConceptsHelper:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   foundationScrapingHelper,
   specialisationScrapingHelper,
   scrapingResourcesHelper,
+  scrapingConceptsHelper,
 };

@@ -1,28 +1,28 @@
-const Resource = require("../db/resource.model");
+const ConceptResource = require("../db/conceptResource.model");
 
-const getResourcesMetadata = async ({ projectType = "ALX" }) => {
+const getConceptResourcesMetadata = async ({ projectType = "ALX" }) => {
   try {
-    const pendingResources = await Resource.find({
+    const pendingConcepts = await ConceptResource.find({
       type: projectType,
       status: "PENDING",
       retryTimes: { $lt: 5 },
     })
       .select({
-        project: 1,
+        concept: 1,
         relatedLinks: 1,
         _id: 1,
         retryTimes: 1,
       })
       .lean(true);
 
-    const errorOrSuccessResources = await Resource.find({
+    const errorOrSuccessConcepts = await ConceptResource.find({
       type: projectType,
       status: { $in: ["ERROR", "SUCCESS", "RETRYING"] },
       errorUrls: { $ne: [] },
       retryTimes: { $lt: 5 },
     })
       .select({
-        project: 1,
+        concept: 1,
         errorUrls: 1,
         _id: 1,
         retryTimes: 1,
@@ -31,8 +31,8 @@ const getResourcesMetadata = async ({ projectType = "ALX" }) => {
 
     const finalData = [
       ...new Set([
-        ...pendingResources.map(JSON.stringify),
-        ...errorOrSuccessResources.map(JSON.stringify),
+        ...pendingConcepts.map(JSON.stringify),
+        ...errorOrSuccessConcepts.map(JSON.stringify),
       ]),
     ].map(JSON.parse);
 
@@ -42,4 +42,4 @@ const getResourcesMetadata = async ({ projectType = "ALX" }) => {
   }
 };
 
-module.exports = getResourcesMetadata;
+module.exports = getConceptResourcesMetadata;

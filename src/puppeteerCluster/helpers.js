@@ -69,8 +69,38 @@ const getFoundationLinks = async (page) => {
   return data;
 };
 
+const getConceptLinks = async (page) => {
+  try {
+    // for fondation page
+    await page.waitForSelector(".list-group", {
+      visible: true,
+    });
+
+    // get fondation links
+    const data = await page.$eval(".list-group", (box) => {
+      let links = Array.from(box?.querySelectorAll("a"));
+      let conceptLinks = links.filter(
+        (link) => link.href && link.href.trim() !== ""
+      );
+
+      let linkObject = conceptLinks.map((link) => {
+        return {
+          href: link.href,
+          name: link.innerText.trim(),
+        };
+      });
+      return linkObject;
+    });
+
+    return data;
+  } catch (error) {
+    console.log(error, "error");
+  }
+};
+
 module.exports = {
   getCurriculumnTypes,
   getSpecialisationsLinks,
   getFoundationLinks,
+  getConceptLinks,
 };

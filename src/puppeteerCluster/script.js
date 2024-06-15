@@ -7,6 +7,7 @@ const loginProcess = require("../auth/auth");
 const { sleep } = require("../utils/sleep");
 
 const { PDF_ROUTE } = require("../config");
+const { timeout } = require("puppeteer");
 
 // scraping project's concept page
 const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
@@ -15,7 +16,7 @@ const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
     await page.setCookie(...cookies);
 
     // Navigate to project page
-    await page.goto(url, { waitUntil: "load" });
+    await page.goto(url, { waitUntil: "load", timeout: 150000 });
 
     // Format PDF name based on project name
     let pdfName;
@@ -29,7 +30,8 @@ const scrapingConceptPage = async (page, url, cookies, curriculumType) => {
     await removeUnwantedTags(page);
 
     // Create directory for the project
-    const dirName = `${PDF_ROUTE}/${curriculumType}/Project-${pdfName.trim()}-dir`;
+    const id = Math.floor(Math.random() * 101);
+    const dirName = `${PDF_ROUTE}/${curriculumType}/Project-${pdfName.trim()}-dir-${id}`;
     await createDir(dirName);
 
     try {
@@ -91,12 +93,12 @@ const scrapingConceptPageResources = async (
 
   const loginAndNavigate = async () => {
     try {
-      await page.goto(url, { waitUntil: "load" });
+      await page.goto(url, { waitUntil: "load", timeout: 150000 });
       const login = await loginProcess(page);
 
       if (login) {
         console.log("Logged in");
-        await page.goto(url, { waitUntil: "load" });
+        await page.goto(url, { waitUntil: "load", timeout: 150000 });
         return true;
       } else {
         console.log("Not logged in, trying again after 3 seconds");
@@ -106,12 +108,12 @@ const scrapingConceptPageResources = async (
         let siteUrl = await page.evaluate(() => window.location.href);
         if (siteUrl.includes("https://intranet.alxswe.com/auth/sign_in")) {
           console.log("Trying to login again");
-          await page.reload({ waitUntil: "networkidle0" });
+          await page.reload({ waitUntil: "networkidle0", timeout: 150000 });
           const loginRetry = await loginProcess(page);
 
           if (loginRetry) {
             console.log("Logged in");
-            await page.goto(url, { waitUntil: "load" });
+            await page.goto(url, { waitUntil: "load", timeout: 150000 });
             return true;
           }
         }
@@ -190,7 +192,7 @@ const scrapingConceptPageResources = async (
 
   let pdfPath = `${dirName}/${pdfName}`;
 
-  if (url.includes("https://www.youtube.com/")) {
+  if (siteUrl.includes("https://www.youtube.com/")) {
     console.log("Youtube video, wait for #channel-name to load");
     await page.waitForSelector("#channel-name", {
       visible: true,

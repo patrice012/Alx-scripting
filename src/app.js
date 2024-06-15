@@ -13,6 +13,7 @@ const {
   scrapingFoundationResources,
   scrapingSpecialisationResources,
   scrapingResources,
+  scrapingConcepts,
 } = require("./puppeteerCluster/job");
 
 const runTestScript = require("./puppeteerCluster/testJob");
@@ -79,7 +80,11 @@ app.get("/specialisation-job", scrapingSpecialisationResources);
 
 app.get("/resources-job", scrapingResources);
 
+app.get("/concepts-job", scrapingConcepts);
+
 app.get("/test-job", runTestScript);
+
+
 
 // Export the app app for testing
 module.exports = app;

@@ -6,6 +6,7 @@ const getProjectsMetadata = async (projectType) => {
     const pendingProjects = await Project.find({
       curriculum: projectType,
       status: "PENDING",
+      retryTimes: { $lt: 5 },
     })
       .select({
         resources: 1,
@@ -21,6 +22,7 @@ const getProjectsMetadata = async (projectType) => {
       curriculum: projectType,
       status: { $in: ["ERROR", "SUCCESS", "RETRYING"] },
       errorUrls: { $ne: [] },
+      retryTimes: { $lt: 5 },
     })
       .select({
         errorUrls: 1,
